@@ -1,0 +1,53 @@
+.Button {
+  border: none;
+  background-color: rgb(42, 49, 89);
+  color: white;
+  border-radius: 3px;
+
+  font-weight: normal;
+  font-size: large;
+
+  display: block;
+  margin: 0px auto;
+  padding: 5px 10px;
+
+  cursor: pointer;
+}
+
+.Input {
+  background-color: rgb(208, 211, 196);
+  color: rgb(42, 49, 89);
+  border: none;
+  border-radius: 3px;
+
+  font-size: large;
+
+  padding: 5px 10px;
+}
+
+.Title {
+  text-align: center;
+  color: rgb(42, 49, 89);
+  font-weight: bold;
+  font-size: x-large;
+}
+
+.Text {
+  color: rgb(42, 49, 89);
+}
+
+.NavLink {
+  color: rgb(42, 49, 89);
+  text-decoration: none;
+  list-style: none;
+
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+}
+
+.NavLink.active {
+  color: rgb(25, 30, 62);
+  font-weight: bold;
+}
