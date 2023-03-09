@@ -13,9 +13,6 @@ from snippet.core.auth import models, schemas
 from snippet.core import core, environment
 
 
-models.Base.metadata.create_all(bind=engine)
-
-
 app = FastAPI()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

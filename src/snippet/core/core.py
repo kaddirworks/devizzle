@@ -10,7 +10,8 @@ from snippet.core.auth import models
 from snippet.core import environment
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+# FIXME: find a way to make this relative to auth core app.
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def get_db():
