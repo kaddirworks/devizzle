@@ -1,8 +1,8 @@
-from fastapi import FastAPI
+from fastapi import APIRouter
 
-app = FastAPI()
+router = APIRouter(prefix="", tags=["home"])
 
 
-@app.get("/")
+@router.get("/")
 def home():
     return {"message": "Hello, world!"}

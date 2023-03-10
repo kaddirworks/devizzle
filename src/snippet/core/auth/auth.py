@@ -2,7 +2,7 @@ import re, uuid
 
 from datetime import datetime, timedelta
 
-from fastapi import FastAPI, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -12,7 +12,7 @@ from snippet.core.auth import models, schemas
 from snippet.core import core, environment
 
 
-app = FastAPI()
+router = APIRouter(prefix="/auth", tags=["auth"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -55,7 +55,7 @@ def generate_secret_code() -> str:
     return uuid.uuid4().hex
 
 
-@app.get("/activate/{activation_code}")
+@router.get("/activate/{activation_code}")
 def activate(activation_code: str, db: Session = Depends(core.get_db)):
     user_activation = (
         db.query(models.UserActivation)
@@ -96,12 +96,14 @@ def send_email(receiver: str, subject: str, content: str):
     import smtplib, ssl, email.utils
     from email.message import EmailMessage
 
-    SENDER = environment.SMTP_SENDER_ADDRESS #"noreply@devizzle.com.br"
-    SENDER_NAME = environment.SMTP_SENDER_NAME #"Message in a Bottle"
-    USERNAME_SMTP = environment.SMTP_USERNAME #"ocid1.user.oc1..aaaaaaaayxsokkakg2346b5yjr6j344b6dotystfnvxsuuugdbjxxskrbgua@ocid1.tenancy.oc1..aaaaaaaajn6vncip54ejaqnyte3zen4zdrq44qes5alqlcflb3wrgqyhcxhq.g5.com"
-    PASSWORD_SMTP = environment.SMTP_PASSWORD #"c+3Bi]AQ8zpFMzs3H5pk"
-    HOST_SMTP = environment.SMTP_HOST #"smtp.email.sa-santiago-1.oci.oraclecloud.com"
-    PORT_SMTP = environment.SMTP_PORT #587
+    SENDER = environment.SMTP_SENDER_ADDRESS  # "noreply@devizzle.com.br"
+    SENDER_NAME = environment.SMTP_SENDER_NAME  # "Message in a Bottle"
+    USERNAME_SMTP = (
+        environment.SMTP_USERNAME
+    )  # "ocid1.user.oc1..aaaaaaaayxsokkakg2346b5yjr6j344b6dotystfnvxsuuugdbjxxskrbgua@ocid1.tenancy.oc1..aaaaaaaajn6vncip54ejaqnyte3zen4zdrq44qes5alqlcflb3wrgqyhcxhq.g5.com"
+    PASSWORD_SMTP = environment.SMTP_PASSWORD  # "c+3Bi]AQ8zpFMzs3H5pk"
+    HOST_SMTP = environment.SMTP_HOST  # "smtp.email.sa-santiago-1.oci.oraclecloud.com"
+    PORT_SMTP = environment.SMTP_PORT  # 587
 
     msg = EmailMessage()
     msg["Subject"] = subject
@@ -141,7 +143,7 @@ def send_activation_code(receiver: str, secret_code: str, username: str):
     send_email(receiver, "Message in a Bottle - Account Activation", content)
 
 
-@app.post("/register")
+@router.post("/register")
 def register(
     form_data: schemas.RegistrationForm,
     background_tasks: BackgroundTasks,
@@ -207,7 +209,7 @@ def register(
     )
 
 
-@app.post("/login")
+@router.post("/login")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(core.get_db)
 ):
@@ -242,7 +244,7 @@ def send_password_change_code(receiver: str, secret_code: str):
     send_email(receiver, "Message in a Bottle - Password Change", content)
 
 
-@app.post("/request-password-change")
+@router.post("/request-password-change")
 def request_password_change(
     form_data: schemas.PasswordChangeRequest,
     background_tasks: BackgroundTasks,
@@ -290,7 +292,7 @@ def send_password_change_confirmation(receiver: str, username: str):
     send_email(receiver, "Message in a Bottle - Password Change Confirmation", content)
 
 
-@app.post("/password-change")
+@router.post("/password-change")
 def password_change(
     form_data: schemas.PasswordChangeForm,
     background_tasks: BackgroundTasks,

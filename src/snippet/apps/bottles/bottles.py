@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from . import schemas, models
@@ -7,7 +7,7 @@ from snippet.core import core
 from snippet.core.auth import auth
 
 
-app = FastAPI()
+router = APIRouter(prefix="/bottles", tags=["bottles"])
 
 
 def get_messaging_profile(
@@ -28,7 +28,7 @@ def get_messaging_profile(
     return messaging_profile
 
 
-@app.post("/send")
+@router.post("/send")
 def send_message(
     form_data: schemas.MessageSendForm,
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
@@ -44,7 +44,7 @@ def send_message(
     return schemas.MessageSendResult()
 
 
-@app.get("/receive")
+@router.get("/receive")
 def receive_message(
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
     db: Session = Depends(core.get_db),
@@ -73,7 +73,7 @@ def receive_message(
     return schemas.MessageReceived(message=message.text, send_date=message.send_date)
 
 
-@app.post("/respond")
+@router.post("/respond")
 def respond_to_message(
     message_response_form: schemas.MessageResponseForm,
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
@@ -98,7 +98,7 @@ def respond_to_message(
     return schemas.MessageResponseResult()
 
 
-@app.get("/my-messages", response_model=list[schemas.Message])
+@router.get("/my-messages", response_model=list[schemas.Message])
 def read_my_messages(
     skip: int = 0,
     limit: int = 100,
