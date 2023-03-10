@@ -2,13 +2,12 @@ import re, uuid
 
 from datetime import datetime, timedelta
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import jwt
 
-from snippet.database import engine
 from snippet.core.auth import models, schemas
 from snippet.core import core, environment
 
@@ -93,8 +92,61 @@ def activate(activation_code: str, db: Session = Depends(core.get_db)):
     return schemas.Token(access_token=access_token, token_type="bearer")
 
 
+def send_email(receiver: str, subject: str, content: str):
+    import smtplib, ssl, email.utils
+    from email.message import EmailMessage
+
+    SENDER = environment.SMTP_SENDER_ADDRESS #"noreply@devizzle.com.br"
+    SENDER_NAME = environment.SMTP_SENDER_NAME #"Message in a Bottle"
+    USERNAME_SMTP = environment.SMTP_USERNAME #"ocid1.user.oc1..aaaaaaaayxsokkakg2346b5yjr6j344b6dotystfnvxsuuugdbjxxskrbgua@ocid1.tenancy.oc1..aaaaaaaajn6vncip54ejaqnyte3zen4zdrq44qes5alqlcflb3wrgqyhcxhq.g5.com"
+    PASSWORD_SMTP = environment.SMTP_PASSWORD #"c+3Bi]AQ8zpFMzs3H5pk"
+    HOST_SMTP = environment.SMTP_HOST #"smtp.email.sa-santiago-1.oci.oraclecloud.com"
+    PORT_SMTP = environment.SMTP_PORT #587
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = email.utils.formataddr((SENDER_NAME, SENDER))
+    msg["To"] = receiver
+    msg.set_content(content)
+
+    try:
+        server = smtplib.SMTP(HOST_SMTP, PORT_SMTP)
+        server.ehlo()
+        server.starttls(
+            context=ssl.create_default_context(
+                purpose=ssl.Purpose.SERVER_AUTH, cafile=None, capath=None
+            )
+        )
+        server.ehlo()
+        server.login(USERNAME_SMTP, PASSWORD_SMTP)
+        server.send_message(msg, SENDER, receiver)
+        server.close()
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
+    else:
+        print("Email successfully sent!")
+        return True
+
+
+def send_activation_code(receiver: str, secret_code: str, username: str):
+    content = (
+        f"Hello, {username}.\n"
+        f"This is your activation code for Message in a Bottle. "
+        f"Please click the link to activate your account.\n"
+        f"http://localhost:8000/auth/activate/{secret_code}\n\n"
+        f"If you dont know what this email is about, please ignore it "
+        f"as it will not be sent again."
+    )
+    send_email(receiver, "Message in a Bottle - Account Activation", content)
+
+
 @app.post("/register")
-def register(form_data: schemas.RegistrationForm, db: Session = Depends(core.get_db)):
+def register(
+    form_data: schemas.RegistrationForm,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(core.get_db),
+):
     if not form_data.username:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Username can not be empty."
@@ -143,6 +195,13 @@ def register(form_data: schemas.RegistrationForm, db: Session = Depends(core.get
             status_code=status.HTTP_400_BAD_REQUEST, detail="Could not create user."
         )
 
+    background_tasks.add_task(
+        send_activation_code,
+        receiver=form_data.email,
+        secret_code=secret_code,
+        username=form_data.username,
+    )
+
     return schemas.RegistrationRequestResult(
         username=form_data.username, email=form_data.email, created_at=user.created_at
     )
@@ -171,9 +230,23 @@ def login(
     return schemas.Token(access_token=access_token, token_type="bearer")
 
 
+def send_password_change_code(receiver: str, secret_code: str):
+    content = (
+        f"Hello.\n"
+        f"It seems you have requested a password change for your account. "
+        f"Please click the link to proceed with changing your account's password.\n"
+        f"TODO: add react route for posting the secret code and changing the password. ({secret_code})\n\n"
+        f"If you dont know what this email is about, please ignore it "
+        f"as it will not be sent again."
+    )
+    send_email(receiver, "Message in a Bottle - Password Change", content)
+
+
 @app.post("/request-password-change")
 def request_password_change(
-    form_data: schemas.PasswordChangeRequest, db: Session = Depends(core.get_db)
+    form_data: schemas.PasswordChangeRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(core.get_db),
 ):
     user = db.query(models.User).filter(models.User.email == form_data.email).first()
     if not user:
@@ -197,14 +270,31 @@ def request_password_change(
             detail="Could not create password change request.",
         )
 
+    background_tasks.add_task(
+        send_password_change_code, receiver=form_data.email, secret_code=secret_code
+    )
+
     return schemas.PasswordChangeRequestResult(
         email=form_data.email, created_at=password_change_request.created_at
     )
 
 
+def send_password_change_confirmation(receiver: str, username: str):
+    content = (
+        f"Hello, {username}.\n"
+        f"It seems you have changed your password a few minutes ago.\n"
+        f"If you do not recognize this activity in your account please "
+        f"change your password immediately or get in contact with us as "
+        f"someone might have gotten access to your account."
+    )
+    send_email(receiver, "Message in a Bottle - Password Change Confirmation", content)
+
+
 @app.post("/password-change")
 def password_change(
-    form_data: schemas.PasswordChangeForm, db: Session = Depends(core.get_db)
+    form_data: schemas.PasswordChangeForm,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(core.get_db),
 ):
     password_change_request = (
         db.query(models.PasswordChangeRequest)
@@ -238,6 +328,12 @@ def password_change(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Could not apply all changes.",
         )
+
+    background_tasks.add_task(
+        send_password_change_confirmation,
+        receiver=password_change_request.email,
+        username=user.username,
+    )
 
     return schemas.PasswordChangeResult(
         email=password_change_request.email, changed_at=user.last_update
