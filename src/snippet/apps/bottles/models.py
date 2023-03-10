@@ -3,11 +3,11 @@ from datetime import datetime
 from sqlalchemy import Integer, Column, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
-from snippet import database
 from snippet.core.auth import models
+from snippet.database import Base
 
 
-class MessagingProfile(database.Base):
+class MessagingProfile(Base):
     __tablename__ = "messaging_profiles"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -18,7 +18,7 @@ class MessagingProfile(database.Base):
     user = relationship(models.User)
 
 
-class Message(database.Base):
+class Message(Base):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, index=True)
