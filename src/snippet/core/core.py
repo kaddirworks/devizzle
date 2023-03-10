@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 
 from snippet.database import SessionLocal
 from snippet.core.auth import models
-from snippet.core import environment
+from snippet.settings import settings
 
 
 # FIXME: find a way to make this relative to auth core app.
@@ -42,7 +42,7 @@ def get_current_user(
 
     try:
         payload = jwt.decode(
-            token, key=environment.SECRET_KEY, algorithms=[environment.ALGORITHM]
+            token, key=settings.secret_key, algorithms=[settings.algorithm]
         )
         username: str = payload.get("sub")
         if not username:

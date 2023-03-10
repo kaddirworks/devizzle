@@ -1,15 +1,18 @@
 import re, uuid
+import smtplib, ssl, email.utils
 
 from datetime import datetime, timedelta
-
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import jwt
 
+from email.message import EmailMessage
+
 from snippet.core.auth import models, schemas
-from snippet.core import core, environment
+from snippet.core import core
+from snippet.settings import settings
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -24,7 +27,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(
-        to_encode, key=environment.SECRET_KEY, algorithm=environment.ALGORITHM
+        to_encode, key=settings.secret_key, algorithm=settings.algorithm
     )
     return encoded_jwt
 
@@ -84,7 +87,7 @@ def activate(activation_code: str, db: Session = Depends(core.get_db)):
             detail="Could not process your activation request. Please check if this user has already been activated.",
         )
 
-    access_token_expires = timedelta(minutes=environment.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
         {"sub": user.username}, expires_delta=access_token_expires
     )
@@ -93,26 +96,16 @@ def activate(activation_code: str, db: Session = Depends(core.get_db)):
 
 
 def send_email(receiver: str, subject: str, content: str):
-    import smtplib, ssl, email.utils
-    from email.message import EmailMessage
-
-    SENDER = environment.SMTP_SENDER_ADDRESS  # "noreply@devizzle.com.br"
-    SENDER_NAME = environment.SMTP_SENDER_NAME  # "Message in a Bottle"
-    USERNAME_SMTP = (
-        environment.SMTP_USERNAME
-    )  # "ocid1.user.oc1..aaaaaaaayxsokkakg2346b5yjr6j344b6dotystfnvxsuuugdbjxxskrbgua@ocid1.tenancy.oc1..aaaaaaaajn6vncip54ejaqnyte3zen4zdrq44qes5alqlcflb3wrgqyhcxhq.g5.com"
-    PASSWORD_SMTP = environment.SMTP_PASSWORD  # "c+3Bi]AQ8zpFMzs3H5pk"
-    HOST_SMTP = environment.SMTP_HOST  # "smtp.email.sa-santiago-1.oci.oraclecloud.com"
-    PORT_SMTP = environment.SMTP_PORT  # 587
-
     msg = EmailMessage()
     msg["Subject"] = subject
-    msg["From"] = email.utils.formataddr((SENDER_NAME, SENDER))
+    msg["From"] = email.utils.formataddr(
+        (settings.smtp_sender_name, settings.smtp_sender_address)
+    )
     msg["To"] = receiver
     msg.set_content(content)
 
     try:
-        server = smtplib.SMTP(HOST_SMTP, PORT_SMTP)
+        server = smtplib.SMTP(settings.smtp_host, settings.smtp_port)
         server.ehlo()
         server.starttls(
             context=ssl.create_default_context(
@@ -120,8 +113,8 @@ def send_email(receiver: str, subject: str, content: str):
             )
         )
         server.ehlo()
-        server.login(USERNAME_SMTP, PASSWORD_SMTP)
-        server.send_message(msg, SENDER, receiver)
+        server.login(settings.smtp_username, settings.smtp_password)
+        server.send_message(msg, settings.smtp_sender_address, receiver)
         server.close()
     except Exception as e:
         print(f"Error: {e}")
@@ -221,7 +214,7 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expires = timedelta(minutes=environment.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
         {"sub": user.username}, expires_delta=access_token_expires
     )
