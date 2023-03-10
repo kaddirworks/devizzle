@@ -43,7 +43,7 @@ const router = createBrowserRouter([
   {
     path: "/profile/conversations/:conversationId",
     element: <Conversation />,
-    loader: conversationLoader
+    loader: conversationLoader,
   },
 ]);
 
