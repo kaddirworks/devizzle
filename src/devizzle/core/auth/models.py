@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Integer, Column, String, DateTime, Boolean
 
-from snippet.database import Base
+from devizzle.database import Base
 
 
 class User(Base):

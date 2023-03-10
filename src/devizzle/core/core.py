@@ -5,9 +5,9 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 
-from snippet.database import SessionLocal
-from snippet.core.auth import models
-from snippet.settings import settings
+from devizzle.database import SessionLocal
+from devizzle.core.auth import models
+from devizzle.settings import settings
 
 
 # FIXME: find a way to make this relative to auth core app.

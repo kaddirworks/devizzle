@@ -18,9 +18,9 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-import snippet.core.auth.models
-import snippet.apps.bottles.models
-from snippet.database import Base
+import devizzle.core.auth.models
+import devizzle.apps.bottles.models
+from devizzle.database import Base
 
 target_metadata = [
     Base.metadata

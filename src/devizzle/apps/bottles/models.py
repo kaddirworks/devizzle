@@ -3,8 +3,8 @@ from datetime import datetime
 from sqlalchemy import Integer, Column, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
-from snippet.core.auth import models
-from snippet.database import Base
+from devizzle.core.auth import models
+from devizzle.database import Base
 
 
 class MessagingProfile(Base):

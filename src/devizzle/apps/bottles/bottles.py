@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from . import schemas, models
-from snippet.core import core
-from snippet.core.auth import auth
+from devizzle.core import core
+from devizzle.core.auth import auth
 
 
 router = APIRouter(prefix="/bottles", tags=["bottles"])

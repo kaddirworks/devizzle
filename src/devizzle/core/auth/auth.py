@@ -10,9 +10,9 @@ from jose import jwt
 
 from email.message import EmailMessage
 
-from snippet.core.auth import models, schemas
-from snippet.core import core
-from snippet.settings import settings
+from devizzle.core.auth import models, schemas
+from devizzle.core import core
+from devizzle.settings import settings
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
