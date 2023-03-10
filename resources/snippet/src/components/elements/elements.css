@@ -14,21 +14,37 @@
   cursor: pointer;
 }
 
-.Input {
-  background-color: rgb(208, 211, 196);
-  color: rgb(42, 49, 89);
+.Input,
+.TextArea {
+  background-color: rgb(215, 215, 215);
+  color: rgb(55, 62, 98);
   border: none;
+  outline: none;
   border-radius: 3px;
 
-  font-size: large;
+  font-size: medium;
+  font-weight: bold;
 
   padding: 5px 10px;
+}
+
+.TextArea {
+  font-weight: normal;
+  padding: 10px 10px;
+  resize: vertical;
 }
 
 .Title {
   text-align: center;
   color: rgb(42, 49, 89);
   font-weight: bold;
+  font-size: x-large;
+}
+
+.SectionTitle {
+  text-align: left;
+  color: rgb(42, 49, 89);
+  font-weight: 400;
   font-size: x-large;
 }
 
@@ -45,6 +61,13 @@
   justify-content: center;
   align-content: center;
   align-items: center;
+}
+
+.Link {
+  text-decoration: none;
+  list-style: none;
+  color: rgb(42, 49, 89);
+  cursor: pointer;
 }
 
 .NavLink.active {

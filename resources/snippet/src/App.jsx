@@ -8,6 +8,8 @@ import About from "./routes/about";
 import Donate from "./routes/donate";
 import Login from "./routes/login";
 import Register from "./routes/register";
+import Profile from "./routes/profile";
+import Conversation, { conversationLoader } from "./routes/conversations";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +35,15 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+  },
+  {
+    path: "/profile",
+    element: <Profile />,
+  },
+  {
+    path: "/profile/conversations/:conversationId",
+    element: <Conversation />,
+    loader: conversationLoader
   },
 ]);
 

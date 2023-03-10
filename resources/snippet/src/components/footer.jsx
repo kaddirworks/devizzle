@@ -20,7 +20,7 @@ class Footer extends React.Component {
               color: "tomato",
             }}
           >
-            <i class="fa-solid fa-heart"></i>
+            <i className="fa-solid fa-heart"></i>
           </span>{" "}
           using FastAPI and React
         </Text>

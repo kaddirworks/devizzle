@@ -9,7 +9,7 @@ class Text extends React.Component {
   }
 
   render() {
-    return <div className="Text">{this.props.children}</div>;
+    return <div className="Text" style={this.props.style}>{this.props.children}</div>;
   }
 }
 

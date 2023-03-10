@@ -20,19 +20,36 @@ class Login extends React.Component {
       <div>
         <Navbar />
         <Container>
-          <Title>Login</Title>
-          <div>
-            <Text>Username</Text>
-            <Input />
-            <Text>Password</Text>
-            <Input />
-            <Button>Login</Button>
-          </div>
-          <div>
-            <Text>
-              Does not have an account? Create an account{" "}
-              <Link dst={"/register"}>here</Link>.
-            </Text>
+          <div
+            style={{
+              maxWidth: "50em",
+              margin: "auto",
+
+              display: "flex",
+              flexDirection: "column",
+              rowGap: "1em",
+            }}
+          >
+            <Title>Login</Title>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                rowGap: "0.5em",
+              }}
+            >
+              <Text>Username</Text>
+              <Input type={"text"} />
+              <Text>Password</Text>
+              <Input type={"password"} />
+              <Button>Submit</Button>
+            </div>
+            <div>
+              <Text>
+                Does not have an account? Create an account{" "}
+                <Link dst={"/register"}>here</Link>.
+              </Text>
+            </div>
           </div>
         </Container>
         <Footer />

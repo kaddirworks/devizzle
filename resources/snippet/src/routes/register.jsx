@@ -22,7 +22,7 @@ class Register extends React.Component {
         <Container>
           <div
             style={{
-              width: "50%",
+              maxWidth: "50em",
               margin: "auto",
 
               display: "flex",
@@ -39,13 +39,13 @@ class Register extends React.Component {
               }}
             >
               <Text>Username</Text>
-              <Input />
+              <Input type={"text"} />
               <Text>Email</Text>
-              <Input />
+              <Input type={"email"} />
               <Text>Password</Text>
-              <Input />
+              <Input type={"password"} />
               <Text>Confirm Password</Text>
-              <Input />
+              <Input type={"password"} />
               <Button>Submit</Button>
             </div>
             <div>

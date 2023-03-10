@@ -9,7 +9,7 @@ class Button extends React.Component {
   }
 
   render() {
-    return <button className="Button">{this.props.children}</button>;
+    return <button className="Button" disabled={this.props.disabled}>{this.props.children}</button>;
   }
 }
 

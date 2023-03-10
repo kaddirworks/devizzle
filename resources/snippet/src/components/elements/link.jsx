@@ -7,7 +7,7 @@ class Link extends React.Component {
   }
 
   render() {
-    return <a href={this.props.dst}>{this.props.children}</a>;
+    return <a href={this.props.dst} className="Link">{this.props.children}</a>;
   }
 }
 
