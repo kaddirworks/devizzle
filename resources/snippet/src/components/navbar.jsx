@@ -16,7 +16,7 @@ class Navbar extends React.Component {
   render() {
     return (
       <div className="Navbar">
-        <div className="Navbar-Title">Message in a Bottle</div>
+        <div className="Navbar-Title">Devizzle</div>
         <div className="Navbar-Links">
           <NavLink dst={"/"}>Home</NavLink>
           <NavLink dst={"/how-it-works"}>How it Works</NavLink>
