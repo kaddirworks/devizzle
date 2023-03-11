@@ -2,15 +2,8 @@ import React from "react";
 
 import "./elements.css";
 
-class Input extends React.Component {
-  constructor(props) {
-    super(props);
-    this.props = props;
-  }
-
-  render() {
-    return <input type={this.props.type} className="Input" />
-  }
+function Input(props) {
+  return <input id={props.id} type={props.type} className="Input" />;
 }
 
 export default Input;

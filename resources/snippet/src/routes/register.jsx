@@ -1,65 +1,180 @@
 import React from "react";
 
 import Navbar from "../components/navbar";
-import Container from "../components/container";
-import Link from "../components/elements/link";
-import Title from "../components/elements/title";
-import Text from "../components/elements/text";
-import Input from "../components/elements/input";
-import Button from "../components/elements/button";
 import Footer from "../components/footer";
 
-class Register extends React.Component {
-  constructor(props) {
-    super(props);
-    this.props = props;
+function resetMessage() {
+  let label = document.querySelector("#message");
+  label.hidden = true;
+}
+
+function showMessage(msg, error = false) {
+  let label = document.querySelector("#message");
+  label.textContent = msg;
+  label.hidden = false;
+  if (error) {
+    label.style.color = "red";
+  } else {
+    label.style.color = "green";
   }
+}
 
-  render() {
-    return (
-      <div>
-        <Navbar />
-        <Container>
-          <div
+function finalize(email) {
+  let label = document.querySelector("#finalization");
+  label.textContent = `A confirmation was sent to ${email}!`;
+  label.hidden = false;
+
+  let form = document.forms[0];
+  form.style.display = "none";
+}
+
+function onSubmit(e) {
+  e.preventDefault();
+  resetMessage();
+
+  let registerForm = document.forms[0];
+  let formData = new FormData(registerForm);
+  let bodyJSON = Object.fromEntries(formData.entries());
+
+  fetch("http://localhost:8000/auth/register", {
+    body: JSON.stringify(bodyJSON),
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then(
+    (res) => {
+      res.json().then(
+        (data) => {
+          if (!res.ok) {
+            showMessage(JSON.stringify(data.detail), true);
+            return;
+          }
+
+          finalize(formData.get("email"));
+        },
+        (err) => {
+          showMessage(err, true);
+        }
+      );
+    },
+    (err) => {
+      showMessage(err, true);
+    }
+  );
+}
+
+function Register(props) {
+  return (
+    <div>
+      <Navbar />
+      <div className="Container">
+        <div
+          style={{
+            maxWidth: "50em",
+            margin: "auto",
+
+            display: "flex",
+            flexDirection: "column",
+            rowGap: "1em",
+          }}
+        >
+          <h1 className="Title">Register</h1>
+          <p
+            id="finalization"
             style={{
-              maxWidth: "50em",
-              margin: "auto",
-
+              color: "green",
+              fontWeight: "bold",
+              textAlign: "center",
+              fontSize: "xx-large",
+            }}
+            hidden
+          >
+            A confirmation was sent to your email!
+          </p>
+          <form
+            style={{
               display: "flex",
               flexDirection: "column",
-              rowGap: "1em",
+              rowGap: "0.5em",
             }}
           >
-            <Title>Register</Title>
-            <div
+            <label className="Text" htmlFor="username">
+              Username
+            </label>
+            <input
+              className="Input"
+              type="text"
+              name="username"
+              id="username"
+              required
+            />
+            <label className="Text" htmlFor="email">
+              Email
+            </label>
+            <input
+              className="Input"
+              type="email"
+              name="email"
+              id="email"
+              required
+            />
+            <label className="Text" htmlFor="password">
+              Password
+            </label>
+            <input
+              className="Input"
+              type="password"
+              name="password"
+              id="password"
+              required
+            />
+            <label className="Text" htmlFor="passwordConfirmation">
+              Password Confirmation
+            </label>
+            <input
+              className="Input"
+              type="password"
+              name="passwordConfirmation"
+              id="passwordConfirmation"
+              required
+            />
+            <p
+              id="message"
               style={{
-                display: "flex",
-                flexDirection: "column",
-                rowGap: "0.5em",
+                textAlign: "center",
+                fontWeight: "bold",
               }}
+              hidden
             >
-              <Text>Username</Text>
-              <Input type={"text"} />
-              <Text>Email</Text>
-              <Input type={"email"} />
-              <Text>Password</Text>
-              <Input type={"password"} />
-              <Text>Confirm Password</Text>
-              <Input type={"password"} />
-              <Button>Submit</Button>
-            </div>
-            <div>
-              <Text>
-                Already have an account? Click <Link dst={"/login"}>here</Link>{" "}
-                to login.
-              </Text>
-            </div>
-          </div>
-        </Container>
-        <Footer />
+              MESSAGE
+            </p>
+            <input
+              className="Button"
+              type="submit"
+              value="Submit"
+              onSubmit={onSubmit}
+              onClick={onSubmit}
+            />
+          </form>
+          <p
+            className="Text"
+            style={{
+              maxWidth: "15em",
+              textAlign: "center",
+            }}
+          >
+            Already have an account? Click{" "}
+            <a className="Link" href="/login">
+              here
+            </a>{" "}
+            to login.
+          </p>
+        </div>
       </div>
-    );
-  }
+      <Footer />
+    </div>
+  );
 }
 
 export default Register;

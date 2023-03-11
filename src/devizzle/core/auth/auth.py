@@ -127,13 +127,13 @@ def send_email(receiver: str, subject: str, content: str):
 def send_activation_code(receiver: str, secret_code: str, username: str):
     content = (
         f"Hello, {username}.\n"
-        f"This is your activation code for Message in a Bottle. "
+        f"This is your activation code for Devizzle. "
         f"Please click the link to activate your account.\n"
-        f"http://localhost:8000/auth/activate/{secret_code}\n\n"
+        f"{settings.allowed_origin}/activate/{secret_code}\n\n"
         f"If you dont know what this email is about, please ignore it "
         f"as it will not be sent again."
     )
-    send_email(receiver, "Message in a Bottle - Account Activation", content)
+    send_email(receiver, "Devizzle - Account Activation", content)
 
 
 @router.post("/register")
@@ -204,7 +204,8 @@ def register(
 
 @router.post("/login")
 def login(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(core.get_db)
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(core.get_db),
 ):
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
@@ -234,7 +235,7 @@ def send_password_change_code(receiver: str, secret_code: str):
         f"If you dont know what this email is about, please ignore it "
         f"as it will not be sent again."
     )
-    send_email(receiver, "Message in a Bottle - Password Change", content)
+    send_email(receiver, "Devizzle - Password Change", content)
 
 
 @router.post("/request-password-change")
@@ -282,7 +283,7 @@ def send_password_change_confirmation(receiver: str, username: str):
         f"change your password immediately or get in contact with us as "
         f"someone might have gotten access to your account."
     )
-    send_email(receiver, "Message in a Bottle - Password Change Confirmation", content)
+    send_email(receiver, "Devizzle - Password Change Confirmation", content)
 
 
 @router.post("/password-change")

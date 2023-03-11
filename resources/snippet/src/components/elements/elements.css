@@ -68,10 +68,11 @@
 }
 
 .Link {
-  text-decoration: none;
+  text-decoration: underline;
   list-style: none;
   color: rgb(42, 49, 89);
   cursor: pointer;
+  font-weight: bold;
 }
 
 .NavLink.active {

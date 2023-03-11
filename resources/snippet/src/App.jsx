@@ -11,6 +11,7 @@ import Register from "./routes/register";
 import Profile from "./routes/profile";
 import Write from "./routes/write";
 import Conversation, { conversationLoader } from "./routes/conversations";
+import Activate, { activateLoader } from "./routes/activate";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,11 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+  },
+  {
+    path: "/activate/:secretCode",
+    element: <Activate />,
+    loader: activateLoader,
   },
   {
     path: "/profile",
