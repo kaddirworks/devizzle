@@ -1,0 +1,18 @@
+.MessagesSectionTitle {
+  display: flex;
+}
+
+.MessagesSectionTitle .SectionTitle {
+  width: 100%;
+}
+
+.MessagesSectionTitle .Link {
+  min-width: max-content;
+  font-size: large;
+  font-weight: bold;
+  text-decoration: underline 2px;
+}
+
+.ConversationLink {
+  text-align: right;
+}

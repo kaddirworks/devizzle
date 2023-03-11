@@ -50,6 +50,7 @@
 
 .Text {
   color: rgb(42, 49, 89);
+  font-size: large;
 }
 
 .NavLink {
@@ -61,6 +62,9 @@
   justify-content: center;
   align-content: center;
   align-items: center;
+
+  font-size: large;
+  font-weight: 500;
 }
 
 .Link {
@@ -72,5 +76,5 @@
 
 .NavLink.active {
   color: rgb(25, 30, 62);
-  font-weight: bold;
+  font-weight: bolder;
 }

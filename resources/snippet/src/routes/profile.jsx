@@ -11,10 +11,22 @@ import Footer from "../components/footer";
 import Button from "../components/elements/button";
 import Link from "../components/elements/link";
 
+import "./profile.css";
+
+function MessagesSectionTitle(props) {
+  return <div className="MessagesSectionTitle">{props.children}</div>;
+}
+
 class Profile extends React.Component {
   constructor(props) {
     super(props);
     this.props = props;
+    this.profileInfo = {
+      sentCount: Math.floor(Math.random() * 101),
+      receivedCount: Math.floor(Math.random() * 101),
+      reputation: Math.floor(Math.random() * 101),
+      ranking: Math.floor(Math.random() * 10001),
+    };
     this.messages = [];
 
     for (let i = 0; i < 20; i++) {
@@ -25,7 +37,9 @@ class Profile extends React.Component {
       }
 
       this.messages.push({
+        conversationId: Math.floor(Math.random() * 99999999),
         text: `Message #${i}`,
+        hasUnreadMessages: Math.random() < 0.4,
         responses,
       });
     }
@@ -41,9 +55,9 @@ class Profile extends React.Component {
           <SectionTitle>Stats</SectionTitle>
           <Row>
             <Column>
-              <Text>Registered: {Date()}</Text>
-              <Text>Sent: {Math.floor(Math.random() * 101)}</Text>
-              <Text>Received: {Math.floor(Math.random() * 101)}</Text>
+              <Text>Registered: {new Date().toDateString()}</Text>
+              <Text>Sent: {this.profileInfo.sentCount}</Text>
+              <Text>Received: {this.profileInfo.receivedCount}</Text>
             </Column>
             <Column>
               <Text
@@ -51,47 +65,51 @@ class Profile extends React.Component {
                   fontWeight: "bold",
                 }}
               >
-                Reputation: {Math.floor(Math.random() * 101)}
+                Reputation: {this.profileInfo.reputation}
               </Text>
               <Text
                 style={{
                   fontWeight: "bold",
                 }}
               >
-                Global Ranking: #{Math.floor(Math.random() * 10001)}
+                Global Ranking: #{this.profileInfo.ranking}
               </Text>
             </Column>
           </Row>
 
-          <SectionTitle>Messages</SectionTitle>
+          <MessagesSectionTitle>
+            <SectionTitle>Messages</SectionTitle>
+            <Link dst={"write"}>New Message</Link>
+          </MessagesSectionTitle>
           <Column>
             {this.messages.map((message) => {
               return (
-                <Row>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    columnGap: "0.8em",
+                  }}
+                >
                   <Column>
                     <Link
-                      dst={`/profile/conversations/${Math.floor(
-                        Math.random() * 999999
-                      )}`}
+                      dst={`/profile/conversations/${message.conversationId}`}
                     >
-                      {Math.random() < 0.2 ? (
-                        <span
-                          style={{
-                            color: "rgb(42, 49, 89)",
-                          }}
-                        >
-                          <i className="fa-solid fa-comment-dots fa-shake"></i> 
-                        </span>
-                      ) : (
-                        ""
-                      )}
-                      {message.text}
+                      <div
+                        style={{
+                          textAlign: "right",
+                          fontWeight: message.hasUnreadMessages ? "bolder" : "",
+                        }}
+                      >
+                        Conversation {message.conversationId}{" "}
+                        {message.hasUnreadMessages ? " *" : ""}
+                      </div>
                     </Link>
                   </Column>
                   <Column>
-                    <Text>Last Reply - {new Date().toISOString()}</Text>
+                    <Text>Last Reply - {new Date().toDateString()}</Text>
                   </Column>
-                </Row>
+                </div>
               );
             })}
             <Row>

@@ -9,6 +9,7 @@ import Donate from "./routes/donate";
 import Login from "./routes/login";
 import Register from "./routes/register";
 import Profile from "./routes/profile";
+import Write from "./routes/write";
 import Conversation, { conversationLoader } from "./routes/conversations";
 
 const router = createBrowserRouter([
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
     path: "/profile/conversations/:conversationId",
     element: <Conversation />,
     loader: conversationLoader,
+  },
+  {
+    path: "/write",
+    element: <Write />,
   },
 ]);
 
