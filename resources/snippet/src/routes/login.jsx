@@ -24,10 +24,11 @@ function showMessage(msg, error = false) {
 function Login(props) {
   const navigate = useNavigate();
 
-  const handleLogin = (token, username, expiration) => {
+  const handleLogin = (token, userId, username, expiration) => {
     let exp = new Date(expiration).toUTCString();
     document.cookie = `access_token=${token}; SameSite=Lax; expires=${exp}; Secure;`;
     document.cookie = `username=${username}; SameSite=Lax; expires=${exp}; Secure;`;
+    document.cookie = `user_id=${userId}; SameSite=Lax; expires=${exp}; Secure;`;
     navigate("/profile");
   };
 
@@ -51,7 +52,14 @@ function Login(props) {
               return;
             }
 
-            handleLogin(data.access_token, data.username, data.expiration);
+            handleLogin(
+              data.access_token,
+              data.user_id,
+              data.username,
+              data.expiration
+            );
+
+            console.log(data);
           },
           (err) => {
             showMessage(err, true);

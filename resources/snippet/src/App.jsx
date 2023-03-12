@@ -10,7 +10,7 @@ import Login from "./routes/login";
 import Register from "./routes/register";
 import Profile from "./routes/profile";
 import Write from "./routes/write";
-import Conversation, { conversationLoader } from "./routes/conversations";
+import Conversation from "./routes/conversations";
 import Activate from "./routes/activate";
 
 const router = createBrowserRouter([
@@ -49,7 +49,6 @@ const router = createBrowserRouter([
   {
     path: "/profile/conversations/:conversationId",
     element: <Conversation />,
-    loader: conversationLoader,
   },
   {
     path: "/write",

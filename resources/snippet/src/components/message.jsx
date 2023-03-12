@@ -14,7 +14,7 @@ function Message(props) {
       <Row>
         <Column>
           <Text>{props.text}</Text>
-          <p className="MessageDateTime">{new Date().toISOString()}</p>
+          <p className="MessageDateTime">{new Date().toLocaleString()}</p>
         </Column>
       </Row>
     </div>

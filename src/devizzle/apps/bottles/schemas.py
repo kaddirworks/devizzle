@@ -27,8 +27,10 @@ class MessageResponseResult(BaseModel):
 
 
 class Message(BaseModel):
+    id: int
     text: str
     send_date: datetime
+    profile_id: int
     responses: list["Message"]
 
     class Config:

@@ -4,7 +4,7 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 
 import "./profile.css";
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function resetMessage() {
   let label = document.querySelector("#message");
@@ -62,6 +62,29 @@ function Profile(props) {
         hideContent(); // probably critical if we're here so hide it
       }
     );
+
+    // try to get the messages
+    fetch("http://localhost:8000/bottles/my-messages", {
+      headers: {
+        Authorization: "Bearer " + access_token,
+      },
+    }).then(
+      (res) => {
+        res.json().then(
+          (data) => {
+            setMessages(data);
+          },
+          (err) => showMessage(err)
+        );
+        // do nothing, the message was added in the background
+      },
+      (err) => {
+        showMessage(err, true);
+        hideContent(); // probably critical if we're here so hide it
+      }
+    );
+
+    // try to get the profile info
     fetch("http://localhost:8000/bottles/profile", {
       headers: {
         Authorization: "Bearer " + access_token,
@@ -106,6 +129,8 @@ function Profile(props) {
 
     document.cookie = "access_token=;";
     document.cookie = "username=;";
+    document.cookie = `user_id=;`;
+
     navigate("/login");
   }
 
@@ -186,7 +211,7 @@ function Profile(props) {
                     <div className="Column">
                       <a
                         className="Link"
-                        href={`/profile/conversations/${message.conversationId}`}
+                        href={`/profile/conversations/${message.id}`}
                         style={{
                           textDecoration: "none",
                         }}
@@ -199,25 +224,24 @@ function Profile(props) {
                               : "",
                           }}
                         >
-                          Conversation {message.conversationId}{" "}
-                          {message.hasUnreadMessages ? " *" : ""}
+                          {message.text} {message.hasUnreadMessages ? " *" : ""}
                         </div>
                       </a>
                     </div>
                     <div className="Column">
                       <p className="Text">
-                        Last Reply - {message.lastReplyDate}
+                        {new Date(message.send_date).toLocaleString()}
                       </p>
-                    </div>
-                    <div className="Row">
-                      <button className="Button" disabled>
-                        Previous Page
-                      </button>
-                      <button className="Button">Next Page</button>
                     </div>
                   </div>
                 );
               })}
+              <div className="Row">
+                <button className="Button" disabled>
+                  Previous Page
+                </button>
+                <button className="Button">Next Page</button>
+              </div>
             </div>
           )}
 

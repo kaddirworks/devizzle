@@ -31,6 +31,8 @@
   font-weight: bold;
 
   padding: 5px 10px;
+
+  min-height: min-content;
 }
 
 .TextArea {

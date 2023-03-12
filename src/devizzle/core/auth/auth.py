@@ -233,6 +233,7 @@ def login(
     return schemas.Token(
         access_token=access_token,
         token_type="bearer",
+        user_id=user.id,
         username=form_data.username,
         expiration=expiration,
     )

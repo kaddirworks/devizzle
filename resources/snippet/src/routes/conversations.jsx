@@ -1,65 +1,153 @@
-import React from "react";
-import { useLoaderData } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import Navbar from "../components/navbar";
-import Container from "../components/container";
-import Column from "../components/column";
-import Title from "../components/elements/title";
-import Input from "../components/elements/input";
-import Button from "../components/elements/button";
-import Message, { MessageContainer } from "../components/message";
 import Footer from "../components/footer";
-import TextArea from "../components/elements/text_area";
-import Row from "../components/row";
 
-const conversationLoader = ({ params }) => {
-  let messages = [];
-  let amount = Math.floor(Math.random() * 101);
+import "../components/message.css";
 
-  for (let i = 0; i < amount; i++) {
-    messages.push({
-      text: `This function is a valid React component because it accepts a single “props” (which stands for properties) object argument with data and returns a React element. We call such components “function components” because they are literally JavaScript functions #${i}`,
-      sender: Math.random() < 0.5 ? "me" : "them",
-    });
+function resetMessage() {
+  document.querySelector("#message").hidden = true;
+}
+
+function showMessage(msg, error = false) {
+  let label = document.querySelector("#message");
+  label.textContent = msg;
+
+  if (error) {
+    label.style.color = "red";
+  } else {
+    label.style.color = "green";
   }
 
-  return {
-    conversationId: params.conversationId,
-    messages,
-  };
-};
+  label.hidden = false;
 
-const Conversation = () => {
-  const { conversationId, messages } = useLoaderData();
+  setTimeout(resetMessage, 3000);
+}
+
+function Conversation() {
+  const { conversationId } = useParams();
+  const [messages, setMessages] = useState([]);
+
+  let access_token = document.cookie
+    .split(";")
+    .map((elem) => elem.trim())
+    .find((elem) => elem.startsWith("access_token="))
+    ?.split("=")[1];
+  let user_id = document.cookie
+    .split(";")
+    .map((elem) => elem.trim())
+    .find((elem) => elem.startsWith("user_id="))
+    ?.split("=")[1];
+
+  useEffect(() => {
+    fetch("http://localhost:8000/bottles/my-messages", {
+      headers: {
+        Authorization: "Bearer " + access_token,
+      },
+    }).then(
+      (res) => {
+        res.json().then(
+          (data) => {
+            setMessages([data[0]].concat(data[0].responses));
+            console.log(data);
+          },
+          (err) => showMessage(err, true)
+        );
+      },
+      (err) => showMessage(err, true)
+    );
+  }, []);
+
+  function onSubmit(e) {
+    e.preventDefault();
+
+    let messageInput = document.querySelector("#messageInput");
+    let body = JSON.stringify({
+      response: messageInput.value,
+      responding_to_id: conversationId,
+    });
+
+    fetch("http://localhost:8000/bottles/respond", {
+      headers: {
+        Authorization: "Bearer " + access_token,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body,
+    }).then(
+      (res) => {
+        res.json().then(
+          (data) => {
+            if (!res.ok) showMessage(JSON.stringify(data), true);
+            else {
+              setMessages(
+                messages.concat({
+                  text: messageInput.value,
+                  send_date: new Date().toISOString(),
+                  profile_id: user_id,
+                })
+              );
+              messageInput.value = "";
+            }
+          },
+          (err) => showMessage(JSON.stringify(err), true)
+        );
+      },
+      (err) => showMessage(err, true)
+    );
+  }
+
   return (
     <div>
       <Navbar />
-      <Container>
-        <Title>Viewing Conversation #{conversationId}</Title>
+      <div className="Container">
+        <h1 className="Title">Viewing Conversation #{conversationId}</h1>
 
-        <MessageContainer>
+        <p
+          style={{
+            textAlign: "center",
+            fontWeight: "bold",
+            fontSize: "x-large",
+            color: "red",
+          }}
+          id="message"
+          hidden
+        >
+          MESSAGE
+        </p>
+
+        <div className="MessageContainer" id="messageContainer">
           {messages.map((message) => {
-            return <Message text={message.text} sender={message.sender} />;
+            return (
+              <div
+                className={
+                  message.profile_id == user_id
+                    ? "Message Mine"
+                    : "Message NotMine"
+                }
+              >
+                <p className="Text">{message.text}</p>
+                <p className="MessageDateTime">
+                  {new Date(message.send_date).toLocaleString()}
+                </p>
+              </div>
+            );
           })}
-        </MessageContainer>
+        </div>
 
-        <TextArea placeholder="Type something..."></TextArea>
-        <Button>Send Reply</Button>
-      </Container>
+        <textarea
+          className="TextArea"
+          placeholder="Type something..."
+          id="messageInput"
+        ></textarea>
+        <button className="Button" onClick={onSubmit}>
+          Send Reply
+        </button>
+      </div>
       <Footer />
     </div>
   );
-};
-
-// class Conversation extends React.Component {
-//   constructor(props) {
-//     super(props);
-//     this.props = props;
-//   }
-
-//   render() {}
-// }
-
-export { conversationLoader };
+}
 
 export default Conversation;

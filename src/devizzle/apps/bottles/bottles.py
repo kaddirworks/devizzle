@@ -109,16 +109,23 @@ def read_my_messages(
 ):
     my_messages = (
         db.query(models.Message)
-        .filter(
-            models.Message.profile_id == messaging_profile.id
-            and models.Message.responding_to_id == None
-        )
+        .filter(models.Message.profile_id == messaging_profile.id)
+        .filter(models.Message.responding_to_id == None)
         .offset(skip)
         .limit(limit)
         .all()
     )
 
-    return my_messages
+    received_messages = (
+        db.query(models.Message)
+        .filter(models.Message.reader_id == messaging_profile.id)
+        .filter(models.Message.responding_to_id == None)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+    return my_messages + received_messages
 
 
 @router.get("/profile", response_model=schemas.MessagingProfile)
@@ -126,19 +133,8 @@ def read_my_profile(
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
     db: Session = Depends(core.get_db),
 ):
-    # TODO: account for conversations not started by me.
-    messages = (
-        db.query(models.Message)
-        .filter(models.Message.profile_id == messaging_profile.id)
-        .filter(models.Message.responding_to_id == None)
-        .offset(0)
-        .limit(20)
-        .all()
-    )
-
     return schemas.MessagingProfile(
         date_created=messaging_profile.date_created,
-        messages=messages,
         ranking=messaging_profile.ranking,
         received_count=messaging_profile.received_count,
         reputation=messaging_profile.reputation,
