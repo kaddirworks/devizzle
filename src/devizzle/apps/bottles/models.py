@@ -14,6 +14,11 @@ class MessagingProfile(Base):
     date_created = Column(DateTime, default=datetime.now)
     last_used = Column(DateTime, default=datetime.now)
 
+    sent_count = Column(Integer, default=0)
+    received_count = Column(Integer, default=0)
+    reputation = Column(Integer, default=0)
+    ranking = Column(Integer, default=0)
+
     user_id = Column(ForeignKey(models.User.id), nullable=False)
     user = relationship(models.User)
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { useLoaderData } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import Navbar from "../components/navbar";
 import Container from "../components/container";
@@ -19,14 +19,16 @@ function showMessage(msg, error = false) {
   }
 }
 
-function activateLoader({ params }) {
-  return {
-    secretCode: params.secretCode,
-  };
-}
-
 function Activate(props) {
-  const { secretCode } = useLoaderData();
+  const { secretCode } = useParams();
+  const navigate = useNavigate();
+
+  const handleLogin = (token, username, expiration) => {
+    let exp = new Date(expiration).toUTCString();
+    document.cookie = `access_token=${token}; SameSite=Lax; expires=${exp}; Secure;`;
+    document.cookie = `username=${username}; SameSite=Lax; expires=${exp}; Secure;`;
+    navigate("/profile");
+  };
 
   fetch("http://localhost:8000/auth/activate/" + secretCode).then(
     (res) => {
@@ -37,7 +39,12 @@ function Activate(props) {
             return;
           }
 
+          handleLogin(data.access_token, data.username, data.expiration);
+
           showMessage("Your account was successfully activated!");
+          setTimeout(() => {
+            navigate("/profile");
+          }, 10000);
         },
         (err) => {
           showMessage(err, true);
@@ -79,7 +86,5 @@ function Activate(props) {
     </>
   );
 }
-
-export { activateLoader };
 
 export default Activate;

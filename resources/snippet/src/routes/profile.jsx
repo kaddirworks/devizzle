@@ -1,129 +1,234 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import Navbar from "../components/navbar";
-import Container from "../components/container";
-import Column from "../components/column";
-import Row from "../components/row";
-import Title from "../components/elements/title";
-import SectionTitle from "../components/elements/section_title";
-import Text from "../components/elements/text";
 import Footer from "../components/footer";
-import Button from "../components/elements/button";
-import Link from "../components/elements/link";
 
 import "./profile.css";
+import { useLoaderData, useNavigate } from "react-router-dom";
 
-function MessagesSectionTitle(props) {
-  return <div className="MessagesSectionTitle">{props.children}</div>;
+function resetMessage() {
+  let label = document.querySelector("#message");
+  label.hidden = true;
 }
 
-class Profile extends React.Component {
-  constructor(props) {
-    super(props);
-    this.props = props;
-    this.profileInfo = {
-      sentCount: Math.floor(Math.random() * 101),
-      receivedCount: Math.floor(Math.random() * 101),
-      reputation: Math.floor(Math.random() * 101),
-      ranking: Math.floor(Math.random() * 10001),
-    };
-    this.messages = [];
+function showMessage(msg, error = false) {
+  let label = document.querySelector("#message");
+  label.textContent = msg;
 
-    for (let i = 0; i < 20; i++) {
-      let responses = [];
-
-      for (let j = 5; j > 0; j--) {
-        responses.push(`Response #${j}`);
-      }
-
-      this.messages.push({
-        conversationId: Math.floor(Math.random() * 99999999),
-        text: `Message #${i}`,
-        hasUnreadMessages: Math.random() < 0.4,
-        responses,
-      });
-    }
+  if (error) {
+    label.style.color = "red";
+  } else {
+    label.style.color = "green";
   }
 
-  render() {
-    return (
-      <div>
-        <Navbar />
-        <Container>
-          <Title>My Profile</Title>
+  label.hidden = false;
+}
 
-          <SectionTitle>Stats</SectionTitle>
-          <Row>
-            <Column>
-              <Text>Registered: {new Date().toDateString()}</Text>
-              <Text>Sent: {this.profileInfo.sentCount}</Text>
-              <Text>Received: {this.profileInfo.receivedCount}</Text>
-            </Column>
-            <Column>
-              <Text
+function hideContent() {
+  let content = document.querySelector("#content");
+  content.hidden = true;
+}
+
+function Profile(props) {
+  const navigate = useNavigate();
+
+  const [profileInfo, setProfileInfo] = useState({
+    dateRegistered: "never",
+    sentCount: "none",
+    receivedCount: "none",
+    reputation: "none",
+    ranking: "none",
+  });
+  const [messages, setMessages] = useState([]);
+
+  const access_token = document.cookie
+    .split(";")
+    .map((elem) => elem.trim())
+    .find((elem) => elem.startsWith("access_token="))
+    ?.split("=")[1];
+
+  useEffect(() => {
+    // try to add new message
+    fetch("http://localhost:8000/bottles/receive", {
+      headers: {
+        Authorization: "Bearer " + access_token,
+      },
+    }).then(
+      (_res) => {
+        // do nothing, the message was added in the background
+      },
+      (err) => {
+        showMessage(err, true);
+        hideContent(); // probably critical if we're here so hide it
+      }
+    );
+    fetch("http://localhost:8000/bottles/profile", {
+      headers: {
+        Authorization: "Bearer " + access_token,
+      },
+    }).then(
+      (res) => {
+        res.json().then(
+          (data) => {
+            if (!res.ok) {
+              if (res.status == 401) {
+                showMessage(data.detail, true);
+                return;
+              }
+              showMessage(data.detail, true);
+              hideContent();
+              return;
+            }
+            setProfileInfo({
+              dateRegistered: new Date(data.date_created).toLocaleString(),
+              sentCount: data.sent_count,
+              receivedCount: data.received_count,
+              reputation: data.reputation,
+              ranking: data.ranking,
+            });
+            setMessages(data.messages);
+          },
+          (err) => {
+            showMessage(err, true);
+            hideContent();
+          }
+        );
+      },
+      (err) => {
+        showMessage(err, true);
+        hideContent();
+      }
+    );
+  }, []);
+
+  function handleLogOut(e) {
+    e.preventDefault();
+
+    document.cookie = "access_token=;";
+    document.cookie = "username=;";
+    navigate("/login");
+  }
+
+  return (
+    <div>
+      <Navbar />
+      <div className="Container">
+        <h1 className="Title">My Profile</h1>
+
+        <p
+          style={{
+            textAlign: "center",
+            fontWeight: "bold",
+            fontSize: "xx-large",
+            color: "red",
+          }}
+          id="message"
+          hidden
+        >
+          An error ocurred and we could not find your profile data.
+        </p>
+
+        <div id="content">
+          <h2 className="SectionTitle">Stats</h2>
+          <div className="Row">
+            <div className="Column">
+              <p className="Text">Registered: {profileInfo.dateRegistered}</p>
+              <p className="Text">Sent: {profileInfo.sentCount}</p>
+              <p className="Text">Received: {profileInfo.receivedCount}</p>
+            </div>
+            <div className="Column">
+              <p
+                className="Text"
                 style={{
                   fontWeight: "bold",
                 }}
               >
-                Reputation: {this.profileInfo.reputation}
-              </Text>
-              <Text
+                Reputation: {profileInfo.reputation}
+              </p>
+              <p
+                className="Text"
                 style={{
                   fontWeight: "bold",
                 }}
               >
-                Global Ranking: #{this.profileInfo.ranking}
-              </Text>
-            </Column>
-          </Row>
+                Global Ranking: #{profileInfo.ranking}
+              </p>
+            </div>
+          </div>
 
-          <MessagesSectionTitle>
-            <SectionTitle>Messages</SectionTitle>
-            <Link dst={"write"}>New Message</Link>
-          </MessagesSectionTitle>
-          <Column>
-            {this.messages.map((message) => {
-              return (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    columnGap: "0.8em",
-                  }}
-                >
-                  <Column>
-                    <Link
-                      dst={`/profile/conversations/${message.conversationId}`}
-                    >
-                      <div
+          <div className="MessagesSectionTitle">
+            <h2 className="SectionTitle">Messages</h2>
+            <a className="Link" href={"write"}>
+              New Message
+            </a>
+          </div>
+          {messages.length == 0 ? (
+            <p
+              className="Text"
+              style={{
+                textAlign: "center",
+              }}
+            >
+              You have not sent or received any messages. When a new message
+              arrives it will appear here.
+            </p>
+          ) : (
+            <div>
+              {messages.map((message) => {
+                return (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      columnGap: "0.8em",
+                    }}
+                  >
+                    <div className="Column">
+                      <a
+                        className="Link"
+                        href={`/profile/conversations/${message.conversationId}`}
                         style={{
-                          textAlign: "right",
-                          fontWeight: message.hasUnreadMessages ? "bolder" : "",
+                          textDecoration: "none",
                         }}
                       >
-                        Conversation {message.conversationId}{" "}
-                        {message.hasUnreadMessages ? " *" : ""}
-                      </div>
-                    </Link>
-                  </Column>
-                  <Column>
-                    <Text>Last Reply - {new Date().toDateString()}</Text>
-                  </Column>
-                </div>
-              );
-            })}
-            <Row>
-              <Button disabled>Previous Page</Button>
-              <Button>Next Page</Button>
-            </Row>
-          </Column>
+                        <div
+                          style={{
+                            textAlign: "right",
+                            fontWeight: message.hasUnreadMessages
+                              ? "bolder"
+                              : "",
+                          }}
+                        >
+                          Conversation {message.conversationId}{" "}
+                          {message.hasUnreadMessages ? " *" : ""}
+                        </div>
+                      </a>
+                    </div>
+                    <div className="Column">
+                      <p className="Text">
+                        Last Reply - {message.lastReplyDate}
+                      </p>
+                    </div>
+                    <div className="Row">
+                      <button className="Button" disabled>
+                        Previous Page
+                      </button>
+                      <button className="Button">Next Page</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
-          <Button>Log out</Button>
-        </Container>
-        <Footer />
+          <button onClick={handleLogOut} className="Button">
+            Log out
+          </button>
+        </div>
       </div>
-    );
-  }
+      <Footer />
+    </div>
+  );
 }
 
 export default Profile;

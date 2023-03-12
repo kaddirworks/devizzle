@@ -92,7 +92,13 @@ def activate(activation_code: str, db: Session = Depends(core.get_db)):
         {"sub": user.username}, expires_delta=access_token_expires
     )
 
-    return schemas.Token(access_token=access_token, token_type="bearer")
+    expiration = datetime.utcnow() + access_token_expires
+    return schemas.Token(
+        access_token=access_token,
+        token_type="bearer",
+        username=user_activation.username,
+        expiration=expiration,
+    )
 
 
 def send_email(receiver: str, subject: str, content: str):
@@ -223,7 +229,13 @@ def login(
     user.last_update = datetime.now()
     db.commit()
 
-    return schemas.Token(access_token=access_token, token_type="bearer")
+    expiration = datetime.utcnow() + access_token_expires
+    return schemas.Token(
+        access_token=access_token,
+        token_type="bearer",
+        username=form_data.username,
+        expiration=expiration,
+    )
 
 
 def send_password_change_code(receiver: str, secret_code: str):

@@ -25,10 +25,24 @@ class MessageResponseResult(BaseModel):
     # TODO
     pass
 
+
 class Message(BaseModel):
     text: str
     send_date: datetime
     responses: list["Message"]
+
+    class Config:
+        orm_mode = True
+
+
+class MessagingProfile(BaseModel):
+    date_created: datetime
+    sent_count: int
+    received_count: int
+    reputation: int
+    ranking: int
+
+    messages: list = []
 
     class Config:
         orm_mode = True

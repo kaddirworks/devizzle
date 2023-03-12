@@ -77,6 +77,8 @@ function Register(props) {
             display: "flex",
             flexDirection: "column",
             rowGap: "1em",
+
+            alignItems: "center",
           }}
         >
           <h1 className="Title">Register</h1>
