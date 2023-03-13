@@ -12,6 +12,7 @@ import Profile from "./routes/profile";
 import Write from "./routes/write";
 import Conversation from "./routes/conversations";
 import Activate from "./routes/activate";
+import withUserInfo from "./client/userInfo";
 
 const router = createBrowserRouter([
   {
@@ -44,15 +45,15 @@ const router = createBrowserRouter([
   },
   {
     path: "/profile",
-    element: <Profile />,
+    element: withUserInfo(<Profile />),
   },
   {
     path: "/profile/conversations/:conversationId",
-    element: <Conversation />,
+    element: withUserInfo(<Conversation />),
   },
   {
     path: "/write",
-    element: <Write />,
+    element: withUserInfo(<Write />),
   },
 ]);
 
