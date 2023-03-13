@@ -1,30 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import Navbar from "../components/navbar";
-import Footer from "../components/footer";
-
-import "../components/message.css";
-
-function resetMessage() {
-  document.querySelector("#message").hidden = true;
-}
-
-function showMessage(msg, error = false) {
-  let label = document.querySelector("#message");
-  label.textContent = msg;
-
-  if (error) {
-    label.style.color = "red";
-  } else {
-    label.style.color = "green";
-  }
-
-  label.hidden = false;
-
-  setTimeout(resetMessage, 3000);
-}
-
 function Conversation() {
   const { conversationId } = useParams();
   const [messages, setMessages] = useState([]);
@@ -99,53 +75,11 @@ function Conversation() {
   }
 
   return (
-    <div>
-      <Navbar />
-      <div className="Container">
-        <h1 className="Title">Viewing Conversation #{conversationId}</h1>
-
-        <p
-          style={{
-            textAlign: "center",
-            fontWeight: "bold",
-            fontSize: "x-large",
-            color: "red",
-          }}
-          id="message"
-          hidden
-        >
-          MESSAGE
-        </p>
-
-        <div className="MessageContainer" id="messageContainer">
-          {messages.map((message) => {
-            return (
-              <div
-                className={
-                  message.profile_id == user_id
-                    ? "Message Mine"
-                    : "Message NotMine"
-                }
-              >
-                <p className="Text">{message.text}</p>
-                <p className="MessageDateTime">
-                  {new Date(message.send_date).toLocaleString()}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-
-        <textarea
-          className="TextArea"
-          placeholder="Type something..."
-          id="messageInput"
-        ></textarea>
-        <button className="Button" onClick={onSubmit}>
-          Send Reply
-        </button>
+    <div className="container is-fluid">
+      <div className="content">
+        <h1>Viewing Conversation #{conversationId}</h1>
+        
       </div>
-      <Footer />
     </div>
   );
 }

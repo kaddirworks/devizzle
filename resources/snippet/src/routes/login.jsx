@@ -1,28 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 
-import Navbar from "../components/navbar";
-import Footer from "../components/footer";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-function resetMessage() {
-  let label = document.querySelector("#message");
-  label.hidden = true;
-}
-
-function showMessage(msg, error = false) {
-  let label = document.querySelector("#message");
-  label.textContent = msg;
-  label.hidden = false;
-
-  if (error) {
-    label.style.color = "red";
-  } else {
-    label.style.color = "green";
-  }
-}
-
-function Login(props) {
+function Login() {
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
 
   const handleLogin = (token, userId, username, expiration) => {
     let exp = new Date(expiration).toUTCString();
@@ -35,8 +17,6 @@ function Login(props) {
   const onSubmit = (e) => {
     e.preventDefault();
 
-    resetMessage();
-
     let form = document.forms[0];
     let formData = new FormData(form);
 
@@ -47,108 +27,64 @@ function Login(props) {
       (res) => {
         res.json().then(
           (data) => {
-            if (!res.ok) {
-              showMessage(data.detail, true);
-              return;
-            }
-
-            handleLogin(
-              data.access_token,
-              data.user_id,
-              data.username,
-              data.expiration
-            );
-
-            console.log(data);
+            if (!res.ok) setError(JSON.stringify(data.detail));
+            else
+              handleLogin(
+                data.access_token,
+                data.user_id,
+                data.username,
+                data.expiration
+              );
           },
-          (err) => {
-            showMessage(err, true);
-          }
+          (err) => setError(JSON.stringify(err))
         );
       },
-      (err) => {
-        showMessage(err, true);
-      }
+      (err) => setError(JSON.stringify(err))
     );
   };
 
   return (
-    <div>
-      <Navbar />
-      <div className="Container">
-        <div
-          style={{
-            maxWidth: "50em",
-            margin: "auto",
+    <div className="container is-fluid">
+      <div className="content">
+        <form className="box">
+          <h1 className="title">Login</h1>
 
-            display: "flex",
-            flexDirection: "column",
-            rowGap: "1em",
-          }}
-        >
-          <h1 className="Title">Login</h1>
+          {error && (
+            <p className="tag is-danger is-medium" id="message">
+              {error}
+            </p>
+          )}
 
-          <form
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              rowGap: "0.5em",
-            }}
-          >
-            <label className="Text" htmlFor="username">
-              Username
-            </label>
+          <div className="field">
             <input
-              className="Input"
+              className="input"
               type="text"
               name="username"
               id="username"
+              placeholder="Username"
             />
-            <label className="Text" htmlFor="password">
-              Password
-            </label>
+          </div>
+          <div className="field">
             <input
-              className="Input"
+              className="input"
               type="password"
               name="password"
               id="password"
+              placeholder="Password"
             />
-
-            <p
-              style={{
-                textAlign: "center",
-                fontWeight: "bold",
-              }}
-              id="message"
-              hidden
-            >
-              MESSAGE
-            </p>
-
-            <input
-              className="Button"
-              type="submit"
-              value="Submit"
-              onSubmit={onSubmit}
-              onClick={onSubmit}
-            />
-          </form>
-          <p
-            className="Text"
-            style={{
-              maxWidth: "15em",
-              textAlign: "center",
-            }}
-          >
-            Does not have an account? Create an account{" "}
-            <a className="Link" href="/register">
-              here
-            </a>
-            .
-          </p>
-        </div>
+          </div>
+          <input
+            className="button is-primary"
+            type="submit"
+            value="Submit"
+            onClick={onSubmit}
+            onSubmit={onSubmit}
+          />
+        </form>
+        <p>
+          Does not have an account? Sign up <Link to="/register">here</Link>.
+        </p>
       </div>
-      <Footer />
     </div>
   );
 }

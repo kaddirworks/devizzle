@@ -97,7 +97,7 @@ def respond_to_message(
     db.commit()
     db.refresh(response)
 
-    return schemas.MessageResponseResult()
+    return response
 
 
 @router.get("/my-messages", response_model=list[schemas.Message])

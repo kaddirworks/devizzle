@@ -1,180 +1,103 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
-import Navbar from "../components/navbar";
-import Footer from "../components/footer";
+function Register() {
+  const [error, setError] = useState(null);
+  const [usedEmail, setUsedEmail] = useState(null);
+  const [isDone, setDone] = useState(false);
 
-function resetMessage() {
-  let label = document.querySelector("#message");
-  label.hidden = true;
-}
+  function onSubmit(e) {
+    e.preventDefault();
 
-function showMessage(msg, error = false) {
-  let label = document.querySelector("#message");
-  label.textContent = msg;
-  label.hidden = false;
-  if (error) {
-    label.style.color = "red";
-  } else {
-    label.style.color = "green";
+    let registerForm = document.forms[0];
+    let formData = new FormData(registerForm);
+    let bodyJSON = Object.fromEntries(formData.entries());
+
+    fetch("http://localhost:8000/auth/register", {
+      body: JSON.stringify(bodyJSON),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then(
+      (res) => {
+        res.json().then(
+          (data) => {
+            if (!res.ok) setError(data.detail);
+            else {
+              setUsedEmail(data.email);
+              setDone(true);
+            }
+          },
+          (err) => setError(JSON.stringify(err))
+        );
+      },
+      (err) => setError(JSON.stringify(err))
+    );
   }
-}
 
-function finalize(email) {
-  let label = document.querySelector("#finalization");
-  label.textContent = `A confirmation was sent to ${email}!`;
-  label.hidden = false;
-
-  let form = document.forms[0];
-  form.style.display = "none";
-}
-
-function onSubmit(e) {
-  e.preventDefault();
-  resetMessage();
-
-  let registerForm = document.forms[0];
-  let formData = new FormData(registerForm);
-  let bodyJSON = Object.fromEntries(formData.entries());
-
-  fetch("http://localhost:8000/auth/register", {
-    body: JSON.stringify(bodyJSON),
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then(
-    (res) => {
-      res.json().then(
-        (data) => {
-          if (!res.ok) {
-            showMessage(JSON.stringify(data.detail), true);
-            return;
-          }
-
-          finalize(formData.get("email"));
-        },
-        (err) => {
-          showMessage(err, true);
-        }
-      );
-    },
-    (err) => {
-      showMessage(err, true);
-    }
-  );
-}
-
-function Register(props) {
   return (
-    <div>
-      <Navbar />
-      <div className="Container">
-        <div
-          style={{
-            maxWidth: "50em",
-            margin: "auto",
+    <div className="container is-fluid">
+      <div className="content">
+        <form className="box">
+          {isDone && <h1>A confirmation message was sent to {usedEmail}!</h1>}
+          {!isDone && (
+            <>
+              <h1>Register</h1>
 
-            display: "flex",
-            flexDirection: "column",
-            rowGap: "1em",
+              {error && <p className="tag is-danger is-medium">{error}</p>}
 
-            alignItems: "center",
-          }}
-        >
-          <h1 className="Title">Register</h1>
-          <p
-            id="finalization"
-            style={{
-              color: "green",
-              fontWeight: "bold",
-              textAlign: "center",
-              fontSize: "xx-large",
-            }}
-            hidden
-          >
-            A confirmation was sent to your email!
-          </p>
-          <form
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              rowGap: "0.5em",
-            }}
-          >
-            <label className="Text" htmlFor="username">
-              Username
-            </label>
-            <input
-              className="Input"
-              type="text"
-              name="username"
-              id="username"
-              required
-            />
-            <label className="Text" htmlFor="email">
-              Email
-            </label>
-            <input
-              className="Input"
-              type="email"
-              name="email"
-              id="email"
-              required
-            />
-            <label className="Text" htmlFor="password">
-              Password
-            </label>
-            <input
-              className="Input"
-              type="password"
-              name="password"
-              id="password"
-              required
-            />
-            <label className="Text" htmlFor="passwordConfirmation">
-              Password Confirmation
-            </label>
-            <input
-              className="Input"
-              type="password"
-              name="passwordConfirmation"
-              id="passwordConfirmation"
-              required
-            />
-            <p
-              id="message"
-              style={{
-                textAlign: "center",
-                fontWeight: "bold",
-              }}
-              hidden
-            >
-              MESSAGE
-            </p>
-            <input
-              className="Button"
-              type="submit"
-              value="Submit"
-              onSubmit={onSubmit}
-              onClick={onSubmit}
-            />
-          </form>
-          <p
-            className="Text"
-            style={{
-              maxWidth: "15em",
-              textAlign: "center",
-            }}
-          >
-            Already have an account? Click{" "}
-            <a className="Link" href="/login">
-              here
-            </a>{" "}
-            to login.
-          </p>
-        </div>
+              <div className="field">
+                <input
+                  className="input"
+                  type="text"
+                  name="username"
+                  id="username"
+                  placeholder="Username"
+                />
+              </div>
+              <div className="field">
+                <input
+                  className="input"
+                  type="email"
+                  name="email"
+                  id="email"
+                  placeholder="Email"
+                />
+              </div>
+              <div className="field">
+                <input
+                  className="input"
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="Password"
+                />
+              </div>
+              <div className="field">
+                <input
+                  className="input"
+                  type="password"
+                  name="passwordConfirmation"
+                  id="passwordConfirmation"
+                  placeholder="Password Confirmation"
+                />
+              </div>
+              <input
+                className="button is-primary"
+                type="submit"
+                value="Submit"
+                onClick={onSubmit}
+                onSubmit={onSubmit}
+              />
+            </>
+          )}
+        </form>
+        <p>
+          Already have an account? Click <Link to="/login">here</Link> to sign
+          in.
+        </p>
       </div>
-      <Footer />
     </div>
   );
 }

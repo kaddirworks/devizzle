@@ -1,41 +1,21 @@
-import React from "react";
-
-import Navbar from "../components/navbar";
-import Footer from "../components/footer";
-import { useNavigate } from "react-router-dom";
-
-function resetMessage() {
-  let label = document.querySelector("#message");
-  label.hidden = true;
-}
-
-function showMessage(msg, error = false) {
-  let label = document.querySelector("#message");
-  label.textContent = msg;
-
-  if (error) {
-    label.style.color = "red";
-  } else {
-    label.style.color = "green";
-  }
-
-  label.hidden = false;
-}
+import React, { useState } from "react";
 
 function Write() {
-  const navigate = useNavigate();
+  const access_token = document.cookie
+    .split(";")
+    .map((elem) => elem.trim())
+    .find((elem) => elem.startsWith("access_token="))
+    ?.split("=")[1];
+
+  const [result, setResult] = useState(null);
 
   function handleSubmit(e) {
     e.preventDefault();
 
-    const access_token = document.cookie
-      .split(";")
-      .map((elem) => elem.trim())
-      .find((elem) => elem.startsWith("access_token="))
-      ?.split("=")[1];
-    let message = document.querySelector("#messageInput").value;
+    let form = document.forms[0];
+    let message = new FormData(form).get("message");
     let body = JSON.stringify({
-      message: message,
+      message,
     });
 
     fetch("http://localhost:8000/bottles/send", {
@@ -49,50 +29,43 @@ function Write() {
       (res) => {
         res.json().then(
           (data) => {
-            if (!res.ok) showMessage(JSON.stringify(data.detail), true);
-            else {
-              showMessage("Your message was sent!");
-              setTimeout(() => {
-                navigate("/profile");
-              }, 3000);
-            }
+            if (!res.ok) setResult(data.detail);
+            else setResult("Your message was sent!");
           },
-          (err) => showMessage(err, true)
+          (err) => setResult(JSON.stringify(err))
         );
       },
-      (err) => showMessage(err, true)
+      (err) => setResult(JSON.stringify(err))
     );
   }
 
   return (
-    <div>
-      <Navbar />
-      <div className="Container">
-        <h1 className="Title">New Message</h1>
-
-        <p
-          style={{
-            textAlign: "center",
-            fontWeight: "bold",
-            fontSize: "x-large",
-            color: "red",
-          }}
-          id="message"
-          hidden
-        >
-          MESSAGE
-        </p>
-
-        <textarea
-          className="TextArea"
-          placeholder="Type something..."
-          id="messageInput"
-        ></textarea>
-        <button className="Button" onClick={handleSubmit}>
-          Send
-        </button>
+    <div className="container is-fluid">
+      <div className="content">
+        {result && <h1>{result}</h1>}
+        {!result && (
+          <>
+            <h1>Write a New Message</h1>
+            <form>
+              <div className="field">
+                <textarea
+                  name="message"
+                  id="message"
+                  className="textarea"
+                  placeholder="Type something..."
+                ></textarea>
+              </div>
+              <input
+                className="button is-primary"
+                type="submit"
+                value="Send"
+                onClick={handleSubmit}
+                onSubmit={handleSubmit}
+              />
+            </form>
+          </>
+        )}
       </div>
-      <Footer />
     </div>
   );
 }

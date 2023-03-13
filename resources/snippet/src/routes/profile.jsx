@@ -1,37 +1,9 @@
 import React, { useEffect, useState } from "react";
 
-import Navbar from "../components/navbar";
-import Footer from "../components/footer";
-
-import "./profile.css";
-import { useNavigate } from "react-router-dom";
-
-function resetMessage() {
-  let label = document.querySelector("#message");
-  label.hidden = true;
-}
-
-function showMessage(msg, error = false) {
-  let label = document.querySelector("#message");
-  label.textContent = msg;
-
-  if (error) {
-    label.style.color = "red";
-  } else {
-    label.style.color = "green";
-  }
-
-  label.hidden = false;
-}
-
-function hideContent() {
-  let content = document.querySelector("#content");
-  content.hidden = true;
-}
+import { Link } from "react-router-dom";
 
 function Profile(props) {
-  const navigate = useNavigate();
-
+  const [error, setError] = useState(null);
   const [profileInfo, setProfileInfo] = useState({
     dateRegistered: "never",
     sentCount: "none",
@@ -40,6 +12,7 @@ function Profile(props) {
     ranking: "none",
   });
   const [messages, setMessages] = useState([]);
+  const [viewingMessage, setViewingMessage] = useState(null);
 
   const access_token = document.cookie
     .split(";")
@@ -57,10 +30,7 @@ function Profile(props) {
       (_res) => {
         // do nothing, the message was added in the background
       },
-      (err) => {
-        showMessage(err, true);
-        hideContent(); // probably critical if we're here so hide it
-      }
+      (err) => setError(JSON.stringify(err))
     );
 
     // try to get the messages
@@ -73,15 +43,13 @@ function Profile(props) {
         res.json().then(
           (data) => {
             setMessages(data);
+            setViewingMessage(data[0]);
           },
-          (err) => showMessage(err)
+          (err) => setError(JSON.stringify(err))
         );
         // do nothing, the message was added in the background
       },
-      (err) => {
-        showMessage(err, true);
-        hideContent(); // probably critical if we're here so hide it
-      }
+      (err) => setError(JSON.stringify(err))
     );
 
     // try to get the profile info
@@ -93,164 +61,289 @@ function Profile(props) {
       (res) => {
         res.json().then(
           (data) => {
-            if (!res.ok) {
-              if (res.status == 401) {
-                showMessage(data.detail, true);
-                return;
-              }
-              showMessage(data.detail, true);
-              hideContent();
-              return;
+            if (!res.ok) setError(data.detail);
+            else {
+              setProfileInfo({
+                dateRegistered: new Date(
+                  data.date_created
+                ).toLocaleDateString(),
+                sentCount: data.sent_count,
+                receivedCount: data.received_count,
+                reputation: data.reputation,
+                ranking: data.ranking,
+              });
+              setMessages(data.messages);
             }
-            setProfileInfo({
-              dateRegistered: new Date(data.date_created).toLocaleString(),
-              sentCount: data.sent_count,
-              receivedCount: data.received_count,
-              reputation: data.reputation,
-              ranking: data.ranking,
-            });
-            setMessages(data.messages);
           },
-          (err) => {
-            showMessage(err, true);
-            hideContent();
-          }
+          (err) => setError(JSON.stringify(err))
         );
       },
-      (err) => {
-        showMessage(err, true);
-        hideContent();
-      }
+      (err) => setError(JSON.stringify(err))
     );
   }, []);
 
-  function handleLogOut(e) {
+  const userInfo = {
+    username: "JohnDoe",
+    id: 1,
+  };
+
+  function onSubmit(e) {
     e.preventDefault();
 
-    document.cookie = "access_token=;";
-    document.cookie = "username=;";
-    document.cookie = `user_id=;`;
+    let form = document.forms[0];
+    let response = new FormData(form).get("response");
+    let body = JSON.stringify({
+      response,
+      responding_to_id: viewingMessage.id,
+    });
 
-    navigate("/login");
+    fetch("http://localhost:8000/bottles/respond", {
+      headers: {
+        Authorization: "Bearer " + access_token,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body,
+    }).then(
+      (res) => {
+        res.json().then(
+          (data) => {
+            if (!res.ok) setError(JSON.stringify(data.detail));
+            else {
+              let newViewingMessage = {
+                ...viewingMessage,
+              };
+              newViewingMessage.responses =
+                newViewingMessage.responses.concat(data);
+              setViewingMessage(newViewingMessage);
+              document.querySelector("#response").value = "";
+            }
+          },
+          (err) => setError(JSON.stringify(err))
+        );
+      },
+      (err) => setError(JSON.stringify(err))
+    );
+  }
+
+  function changeViewingMessage(e) {
+    e.preventDefault();
+
+    let targetMessage = messages.find(
+      (message) => message.id == Number.parseInt(e.target.target)
+    );
+    setViewingMessage(targetMessage);
   }
 
   return (
-    <div>
-      <Navbar />
-      <div className="Container">
-        <h1 className="Title">My Profile</h1>
-
-        <p
-          style={{
-            textAlign: "center",
-            fontWeight: "bold",
-            fontSize: "xx-large",
-            color: "red",
-          }}
-          id="message"
-          hidden
-        >
-          An error ocurred and we could not find your profile data.
-        </p>
-
-        <div id="content">
-          <h2 className="SectionTitle">Stats</h2>
-          <div className="Row">
-            <div className="Column">
-              <p className="Text">Registered: {profileInfo.dateRegistered}</p>
-              <p className="Text">Sent: {profileInfo.sentCount}</p>
-              <p className="Text">Received: {profileInfo.receivedCount}</p>
+    <div className="container is-fluid">
+      <div className="content">
+        {error && <h1>{error}</h1>}
+        {!error && (
+          <>
+            <h1>{userInfo.username}</h1>
+            <div className="box">
+              <h2>Stats</h2>
+              <nav className="level">
+                <div className="level-item has-text-centered">
+                  <div>
+                    <p className="heading">Member Since</p>
+                    <p className="title">{profileInfo.dateRegistered}</p>
+                  </div>
+                </div>
+                <div className="level-item has-text-centered">
+                  <div>
+                    <p className="heading">Messages Sent</p>
+                    <p className="title">{profileInfo.sentCount}</p>
+                  </div>
+                </div>
+                <div className="level-item has-text-centered">
+                  <div>
+                    <p className="heading">Messages Received</p>
+                    <p className="title">{profileInfo.receivedCount}</p>
+                  </div>
+                </div>
+                <div className="level-item has-text-centered">
+                  <div>
+                    <p className="heading">Reputation</p>
+                    <p className="title">{profileInfo.reputation}</p>
+                  </div>
+                </div>
+                <div className="level-item has-text-centered">
+                  <div>
+                    <p className="heading">Ranking</p>
+                    <p className="title">{profileInfo.ranking}</p>
+                  </div>
+                </div>
+              </nav>
             </div>
-            <div className="Column">
-              <p
-                className="Text"
-                style={{
-                  fontWeight: "bold",
-                }}
-              >
-                Reputation: {profileInfo.reputation}
-              </p>
-              <p
-                className="Text"
-                style={{
-                  fontWeight: "bold",
-                }}
-              >
-                Global Ranking: #{profileInfo.ranking}
-              </p>
-            </div>
-          </div>
 
-          <div className="MessagesSectionTitle">
-            <h2 className="SectionTitle">Messages</h2>
-            <a className="Link" href={"write"}>
-              New Message
-            </a>
-          </div>
-          {messages.length == 0 ? (
-            <p
-              className="Text"
-              style={{
-                textAlign: "center",
-              }}
-            >
-              You have not sent or received any messages. When a new message
-              arrives it will appear here.
-            </p>
-          ) : (
-            <div>
-              {messages.map((message) => {
-                return (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      columnGap: "0.8em",
-                    }}
-                  >
-                    <div className="Column">
-                      <a
-                        className="Link"
-                        href={`/profile/conversations/${message.id}`}
-                        style={{
-                          textDecoration: "none",
-                        }}
-                      >
+            <div className="box">
+              <h2>
+                Messages{" "}
+                <span>
+                  <Link className="tag is-link" to="/write">
+                    Write New Message
+                  </Link>
+                </span>
+              </h2>
+
+              {messages.length == 0 && (
+                <p>
+                  You have no messages yet! Whenever you send or receive a
+                  message it will appear here.
+                </p>
+              )}
+              {messages.length > 0 && (
+                <div className="container is-fluid">
+                  <div className="columns">
+                    <div className="column is-narrow">
+                      <nav className="panel">
+                        <p className="panel-heading">Conversations</p>
                         <div
                           style={{
-                            textAlign: "right",
-                            fontWeight: message.hasUnreadMessages
-                              ? "bolder"
-                              : "",
+                            maxHeight: "30em",
+                            overflow: "auto",
                           }}
                         >
-                          {message.text} {message.hasUnreadMessages ? " *" : ""}
+                          {messages.map((message) => {
+                            return (
+                              <a
+                                key={`message-list-item-${message.id}`}
+                                className={
+                                  viewingMessage &&
+                                  message.id == viewingMessage.id
+                                    ? "panel-block is-active"
+                                    : "panel-block"
+                                }
+                                target={message.id}
+                                onClick={changeViewingMessage}
+                              >
+                                {/* FIXME: icon not being rendered for some reason. */}
+                                <span className="panel-icon">
+                                  <i className="fa-solid fa-comment"></i>
+                                </span>
+                                {message.text}
+                              </a>
+                            );
+                          })}
                         </div>
-                      </a>
+                        <div className="panel-block">
+                          <button className="button is-link is-fullwidth">
+                            Load More
+                          </button>
+                        </div>
+                      </nav>
                     </div>
-                    <div className="Column">
-                      <p className="Text">
-                        {new Date(message.send_date).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-              <div className="Row">
-                <button className="Button" disabled>
-                  Previous Page
-                </button>
-                <button className="Button">Next Page</button>
-              </div>
-            </div>
-          )}
 
-          <button onClick={handleLogOut} className="Button">
-            Log out
-          </button>
-        </div>
+                    {viewingMessage && (
+                      <>
+                        <div className="column">
+                          <article className="panel is-info">
+                            <p className="panel-heading">
+                              {viewingMessage.text}
+                            </p>
+
+                            <>
+                              <div
+                                className="container is-fluid"
+                                style={{
+                                  maxHeight: "30em",
+                                  overflow: "auto",
+                                }}
+                              >
+                                <article
+                                  key={`response-${viewingMessage.id}`}
+                                  className="media"
+                                >
+                                  <div className="media-content">
+                                    <div className="content">
+                                      <p>
+                                        <strong>
+                                          {viewingMessage.profile_id ==
+                                          userInfo.id
+                                            ? "Me"
+                                            : "User"}
+                                        </strong>{" "}
+                                        <small>
+                                          #{viewingMessage.profile_id}
+                                        </small>{" "}
+                                        <small>
+                                          {new Date(
+                                            viewingMessage.send_date
+                                          ).toLocaleString()}
+                                        </small>
+                                        <br />
+                                        {viewingMessage.text}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </article>
+                                {viewingMessage.responses.map((response) => {
+                                  return (
+                                    <article
+                                      className="media"
+                                      key={`response-${response.id}`}
+                                    >
+                                      <div className="media-content">
+                                        <div className="content">
+                                          <p>
+                                            <strong>
+                                              {response.profile_id ==
+                                              userInfo.id
+                                                ? "Me"
+                                                : "User"}
+                                            </strong>{" "}
+                                            <small>
+                                              #{response.profile_id}
+                                            </small>{" "}
+                                            <small>
+                                              {new Date(
+                                                response.send_date
+                                              ).toLocaleString()}
+                                            </small>
+                                            <br />
+                                            {response.text}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </article>
+                                  );
+                                })}
+                              </div>
+                            </>
+                          </article>
+                          <form className="container is-fluid">
+                            <div className="columns">
+                              <div className="column">
+                                <input
+                                  className="input is-fullwidth"
+                                  type="text"
+                                  placeholder="Type something..."
+                                  name="response"
+                                  id="response"
+                                />
+                              </div>
+                              <div className="column is-narrow">
+                                <input
+                                  className="button is-primary"
+                                  type="submit"
+                                  value="Send"
+                                  onClick={onSubmit}
+                                />
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
-      <Footer />
     </div>
   );
 }
