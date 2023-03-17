@@ -1,155 +1,200 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
+import UserContext from "./context/user";
+
 import Home from "./routes/home";
-import HowItWorks from "./routes/how-it-works";
 import About from "./routes/about";
-import Donate from "./routes/donate";
 import Login from "./routes/login";
 import Register from "./routes/register";
 import SignOut from "./routes/signout";
 import Profile from "./routes/profile";
 import Write from "./routes/write";
 import Activate from "./routes/activate";
-import withUserInfo from "./client/userInfo";
+
+import { withNavBar } from "./components/Navbar";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
-  },
-  {
-    path: "/how-it-works",
-    element: <HowItWorks />,
+    element: withNavBar(<Home />),
   },
   {
     path: "/about",
-    element: <About />,
-  },
-  {
-    path: "/donate",
-    element: <Donate />,
+    element: withNavBar(<About />),
   },
   {
     path: "/login",
-    element: <Login />,
+    element: withNavBar(<Login />),
   },
   {
     path: "/register",
-    element: <Register />,
+    element: withNavBar(<Register />),
   },
   {
     path: "/signout",
-    element: <SignOut />,
+    element: withNavBar(<SignOut />),
   },
   {
     path: "/activate/:secretCode",
-    element: <Activate />,
+    element: withNavBar(<Activate />),
   },
   {
     path: "/profile",
-    element: withUserInfo(<Profile />),
+    element: withNavBar(<Profile />),
   },
   {
     path: "/write",
-    element: withUserInfo(<Write />),
+    element: withNavBar(<Write />),
   },
 ]);
 
-function App() {
-  const [userData, setUserData] = useState(null);
+class App extends React.Component {
+  constructor({ props }) {
+    super(props);
 
-  useEffect(() => {
-    const access_token = document.cookie
+    this.setUserInfo = (userInfo) => {
+      this.setState({
+        userInfo,
+      });
+    };
+
+    this.set = (data) => {
+      this.setState(data);
+    };
+
+    this.state = {
+      error: null,
+      userInfo: null,
+      messages: [],
+      setUserInfo: this.setUserInfo,
+      set: this.set,
+    };
+  }
+
+  setError(error) {
+    this.setState({ error });
+  }
+
+  handle401() {
+    this.setState({
+      mustRelogin: true,
+    });
+    this.setUserInfo(null);
+  }
+
+  componentDidMount() {
+    let accessToken = document.cookie
       .split(";")
       .map((elem) => elem.trim())
       .find((elem) => elem.startsWith("access_token="))
       ?.split("=")[1];
-    const username = document.cookie
+    let username = document.cookie
       .split(";")
       .map((elem) => elem.trim())
       .find((elem) => elem.startsWith("username="))
       ?.split("=")[1];
-    const user_id = document.cookie
+    let userId = document.cookie
       .split(";")
       .map((elem) => elem.trim())
       .find((elem) => elem.startsWith("user_id="))
       ?.split("=")[1];
 
-    if (!access_token || !username || !user_id) setUserData(null);
-    else
-      setUserData({
-        access_token,
-        username,
-        user_id,
-      });
-  }, []);
+    if (!(username && userId && accessToken)) {
+      this.setUserInfo(null);
+      return;
+    }
 
-  return (
-    <div>
-      <nav className="navbar" role="navigation" aria-label="main navigation">
-        <div className="navbar-brand">
-          <a className="navbar-item" href="https://bulma.io">
-            <img
-              src="https://bulma.io/images/bulma-logo.png"
-              width="112"
-              height="28"
-            />
-          </a>
+    this.setUserInfo({
+      username,
+      userId,
+      accessToken,
+    });
 
-          <a
-            role="button"
-            className="navbar-burger"
-            aria-label="menu"
-            aria-expanded="false"
-            data-target="navbarBasicExample"
-          >
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
-        </div>
+    // try to get the profile info
+    fetch("http://localhost:8000/bottles/profile", {
+      headers: {
+        Authorization: "Bearer " + accessToken,
+      },
+    }).then(
+      (res) => {
+        res.json().then(
+          (data) => {
+            if (!res.ok) {
+              if (res.status == 401) this.handle401();
+              else setError(data.detail);
+            } else {
+              this.setState({
+                dateRegistered: new Date(
+                  data.date_created
+                ).toLocaleDateString(),
+                sentCount: data.sent_count,
+                receivedCount: data.received_count,
+                reputation: data.reputation,
+                ranking: data.ranking,
+              });
+              this.setState({ messages: data.messages });
+            }
+          },
+          (err) => this.setError(JSON.stringify(err))
+        );
+      },
+      (err) => this.setError(JSON.stringify(err))
+    );
 
-        <div id="navbarBasicExample" className="navbar-menu">
-          <div className="navbar-start">
-            <a className="navbar-item" href="/">
-              Home
-            </a>
-            <a className="navbar-item" href="/about">
-              About
-            </a>
+    // try to add new message
+    fetch("http://localhost:8000/bottles/receive", {
+      headers: {
+        Authorization: "Bearer " + accessToken,
+      },
+    }).then(
+      (res) => {
+        if (res.status == 401) this.handle401();
+      },
+      (err) => this.setError(JSON.stringify(err))
+    );
+
+    // try to get the messages
+    fetch("http://localhost:8000/bottles/my-messages", {
+      headers: {
+        Authorization: "Bearer " + accessToken,
+      },
+    }).then(
+      (res) => {
+        res.json().then(
+          (data) => {
+            if (!res.ok) {
+              if (res.status == 401) this.handle401();
+              else this.setError(data.detail);
+            }
+            this.setState({ messages: data });
+            this.setState({ viewingMessage: data[0] });
+          },
+          (err) => this.setError(JSON.stringify(err))
+        );
+        // do nothing, the message was added in the background
+      },
+      (err) => this.setError(JSON.stringify(err))
+    );
+  }
+
+  render() {
+    return (
+      <>
+        <div className="container is-fluid">
+          <div className="content">
+            {this.state.error && <h1>{this.state.error}</h1>}
+            {!this.state.error && (
+              <UserContext.Provider value={this.state}>
+                <RouterProvider router={router} />
+              </UserContext.Provider>
+            )}
           </div>
-
-          <div className="navbar-end">
-            <div className="navbar-item">
-              {userData && (
-                <div className="buttons">
-                  <a className="button is-primary" href="/profile">
-                    My profile
-                  </a>
-                  <a className="button is-light" href="/signout">
-                    Sign out
-                  </a>
-                </div>
-              )}
-              {!userData && (
-                <div className="buttons">
-                  <a className="button is-primary" href="/register">
-                    <strong>Sign up</strong>
-                  </a>
-                  <a className="button is-light" href="/login">
-                    Log in
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
-      </nav>
-      <RouterProvider router={router} />
-    </div>
-  );
+      </>
+    );
+  }
 }
 
 export default App;
