@@ -4,14 +4,14 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import UserContext from "./context/user";
 
-import Home from "./routes/home";
-import About from "./routes/about";
-import Login from "./routes/login";
-import Register from "./routes/register";
-import SignOut from "./routes/signout";
-import Profile from "./routes/profile";
-import Write from "./routes/write";
-import Activate from "./routes/activate";
+import Home from "./routes/Home";
+import About from "./routes/About";
+import Login from "./routes/Login";
+import Register from "./routes/Register";
+import SignOut from "./routes/SignOut";
+import Profile from "./routes/Profile";
+import Write from "./routes/Write";
+import Activate from "./routes/Activate";
 
 import { withNavBar } from "./components/Navbar";
 

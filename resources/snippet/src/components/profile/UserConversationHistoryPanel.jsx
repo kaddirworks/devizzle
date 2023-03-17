@@ -11,7 +11,10 @@ class UserConversationHistoryPanel extends React.Component {
 
   scrollChat() {
     let responsePadding = document.querySelector("#response-padding");
-    responsePadding?.scrollIntoView(); // FIXME: sometimes this is null, why?
+    responsePadding?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    }); // FIXME: sometimes this is null, why?
   }
 
   componentDidUpdate() {

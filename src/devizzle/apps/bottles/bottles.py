@@ -41,7 +41,7 @@ def send_message(
     db.commit()
     db.refresh(message)
 
-    return schemas.MessageSendResult()
+    return message
 
 
 @router.get("/receive")

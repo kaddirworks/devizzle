@@ -21,7 +21,7 @@ class SignOut extends React.Component {
       document.cookie = "user_id=;";
       this.context.setUserInfo(null);
       this.setState({ done: true });
-    }, 3000);
+    }, 500);
   }
 
   render() {

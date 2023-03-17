@@ -15,7 +15,7 @@ class UserConversationHistoryItem extends React.Component {
           <div className="content">
             <p>
               <strong>
-                {this.props.message.profile_id == this.context.userInfo.id
+                {this.props.message.profile_id == this.context.userInfo.userId
                   ? "Me"
                   : "Someone"}
               </strong>{" "}
