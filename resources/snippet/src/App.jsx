@@ -108,7 +108,7 @@ class App extends React.Component {
 
     this.setUserInfo({
       username,
-      userId,
+      userId: Number.parseInt(userId),
       accessToken,
     });
 
@@ -181,18 +181,16 @@ class App extends React.Component {
 
   render() {
     return (
-      <>
-        <div className="container is-fluid">
-          <div className="content">
-            {this.state.error && <h1>{this.state.error}</h1>}
-            {!this.state.error && (
-              <UserContext.Provider value={this.state}>
-                <RouterProvider router={router} />
-              </UserContext.Provider>
-            )}
-          </div>
+      <div className="container is-fluid">
+        <div className="content">
+          {this.state.error && <h1>{this.state.error}</h1>}
+          {!this.state.error && (
+            <UserContext.Provider value={this.state}>
+              <RouterProvider router={router} />
+            </UserContext.Provider>
+          )}
         </div>
-      </>
+      </div>
     );
   }
 }

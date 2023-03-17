@@ -26,7 +26,6 @@ function Conversation() {
         res.json().then(
           (data) => {
             setMessages([data[0]].concat(data[0].responses));
-            console.log(data);
           },
           (err) => showMessage(err, true)
         );
