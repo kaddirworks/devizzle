@@ -38,11 +38,11 @@ class Message(BaseModel):
 
 
 class MessagingProfile(BaseModel):
+    id: int
     date_created: datetime
     sent_count: int
     received_count: int
     reputation: int
-    ranking: int
 
     class Config:
         orm_mode = True

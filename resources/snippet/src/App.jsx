@@ -153,6 +153,7 @@ class App extends React.Component {
       (res) => {
         let data = res.data;
         this.setState({
+          messagingProfile: data.id,
           dateRegistered: new Date(data.date_created).toLocaleDateString(),
           sentCount: data.sent_count,
           receivedCount: data.received_count,

@@ -36,12 +36,6 @@ class UserBasicInfoPanel extends React.Component {
               <p className="title">{this.context.reputation}</p>
             </div>
           </div>
-          <div className="level-item has-text-centered">
-            <div>
-              <p className="heading">Ranking</p>
-              <p className="title">{this.context.ranking}</p>
-            </div>
-          </div>
         </nav>
       </>
     );

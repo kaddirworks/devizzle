@@ -36,14 +36,14 @@ class UserMessagesBrowserPanel extends React.Component {
                     to="/write"
                     title="Write New Message"
                   >
-                    <i className="fa-solid fa-pencil"></i>
+                    <i className="fa-solid fa-pencil fa-bounce"></i>
                   </Link>{" "}
                   <a
                     className="is-link"
                     onClick={this.context.loadMoreConversations}
                     title="Load More"
                   >
-                    <i class="fa-solid fa-snowplow"></i>
+                    <i class="fa-solid fa-snowplow fa-bounce"></i>
                   </a>
                 </span>
               </p>

@@ -19,6 +19,7 @@ def get_messaging_profile(
         .filter(models.MessagingProfile.user_id == current_user.id)
         .first()
     )
+
     if not messaging_profile:
         messaging_profile = models.MessagingProfile(user_id=current_user.id)
         db.add(messaging_profile)
@@ -36,10 +37,12 @@ def send_message(
 ):
     message = models.Message(text=form_data.message, profile_id=messaging_profile.id)
     messaging_profile.last_used = datetime.now()
+    messaging_profile.sent_count += 1
 
     db.add(message)
     db.commit()
     db.refresh(message)
+    db.refresh(messaging_profile)
 
     return message
 
@@ -53,9 +56,9 @@ def receive_message(
 
     message = (
         db.query(models.Message)
-        .filter(models.Message.profile != messaging_profile)
-        .filter(models.Message.reader == None)
-        .filter(models.Message.responding_to == None)
+        .filter(models.Message.profile_id != messaging_profile.id)
+        .filter(models.Message.reader_id == None)
+        .filter(models.Message.responding_to_id == None)
         .first()
     )
     if not message:
@@ -68,11 +71,15 @@ def receive_message(
 
     message.read_date = now
     message.reader_id = messaging_profile.id
+    message.profile.reputation += 1
     messaging_profile.last_used = now
+    messaging_profile.received_count += 1
+
     db.commit()
     db.refresh(message)
+    db.refresh(messaging_profile)
 
-    return schemas.MessageReceived(message=message.text, send_date=message.send_date)
+    return message
 
 
 @router.post("/respond")
@@ -81,21 +88,28 @@ def respond_to_message(
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
     db: Session = Depends(core.get_db),
 ):
-    message_to_respond = (
-        db.query(models.Message)
-        .filter(models.Message.id == message_response_form.responding_to_id)
-        .first()
-    )
-
     response = models.Message(
         text=message_response_form.response,
         profile_id=messaging_profile.id,
         responding_to_id=message_response_form.responding_to_id,
     )
 
+    responding_to = (
+        db.query(models.Message)
+        .filter(models.Message.id == message_response_form.responding_to_id)
+        .first()
+    )
+
+    messaging_profile.last_used = datetime.now()
+    messaging_profile.sent_count += 1
+    if responding_to.profile_id != messaging_profile.id:
+        responding_to.profile.reputation += 1
+        responding_to.profile.received_count += 1
+
     db.add(response)
     db.commit()
     db.refresh(response)
+    db.refresh(messaging_profile)
 
     return response
 
@@ -125,7 +139,8 @@ def read_my_messages(
         .all()
     )
 
-    return my_messages + received_messages
+    messages = my_messages + received_messages
+    return messages
 
 
 @router.get("/profile", response_model=schemas.MessagingProfile)
@@ -134,8 +149,8 @@ def read_my_profile(
     db: Session = Depends(core.get_db),
 ):
     return schemas.MessagingProfile(
+        id=messaging_profile.id,
         date_created=messaging_profile.date_created,
-        ranking=messaging_profile.ranking,
         received_count=messaging_profile.received_count,
         reputation=messaging_profile.reputation,
         sent_count=messaging_profile.sent_count,

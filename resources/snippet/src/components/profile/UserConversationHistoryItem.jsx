@@ -12,7 +12,7 @@ class UserConversationHistoryItem extends React.Component {
     return (
       <blockquote className="blockquote">
         <strong>
-          {this.props.message.profile_id == this.context.userInfo.userId
+          {this.props.message.profile_id == this.context.messagingProfile
             ? "Me"
             : "Someone"}
         </strong>

@@ -17,9 +17,8 @@ class MessagingProfile(Base):
     sent_count = Column(Integer, default=0)
     received_count = Column(Integer, default=0)
     reputation = Column(Integer, default=0)
-    ranking = Column(Integer, default=0)
 
-    user_id = Column(ForeignKey(models.User.id), nullable=False)
+    user_id = Column(ForeignKey(models.User.id), nullable=False, unique=True)
     user = relationship(models.User)
 
 
