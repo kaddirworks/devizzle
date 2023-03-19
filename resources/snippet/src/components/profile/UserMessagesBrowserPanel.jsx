@@ -7,12 +7,7 @@ class UserMessagesBrowserPanel extends React.Component {
   constructor({ props }) {
     super(props);
 
-    this.handleLoadMore = this.handleLoadMore.bind(this);
     this.changeViewingMessage = this.changeViewingMessage.bind(this);
-  }
-
-  handleLoadMore() {
-    alert("Loading more messages");
   }
 
   changeViewingMessage(e) {
@@ -61,7 +56,7 @@ class UserMessagesBrowserPanel extends React.Component {
         <div className="panel-block">
           <button
             className="button is-link is-fullwidth"
-            onClick={this.handleLoadMore}
+            onClick={this.context.loadMoreConversations}
           >
             Load More
           </button>

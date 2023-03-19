@@ -10,11 +10,11 @@ class UserConversationHistoryPanel extends React.Component {
   }
 
   scrollChat() {
-    let responsePadding = document.querySelector("#response-padding");
-    responsePadding?.scrollIntoView({
+    let historyPanel = document.querySelector("#history-panel");
+    historyPanel.scroll({
+      top: historyPanel.scrollHeight,
       behavior: "smooth",
-      block: "center",
-    }); // FIXME: sometimes this is null, why?
+    });
   }
 
   componentDidUpdate() {
@@ -22,13 +22,15 @@ class UserConversationHistoryPanel extends React.Component {
   }
 
   componentDidMount() {
-    // this.scrollChat();
+    this.scrollChat();
   }
 
   render() {
     return (
       <article className="panel is-info">
-        <p className="panel-heading">Someone #{this.context.viewingMessage.profile_id}</p>
+        <p className="panel-heading">
+          Someone #{this.context.viewingMessage.profile_id}
+        </p>
 
         <div
           className="container is-fluid"
@@ -38,6 +40,7 @@ class UserConversationHistoryPanel extends React.Component {
             height: "30em",
             overflow: "auto",
           }}
+          id="history-panel"
         >
           <UserConversationHistoryItem message={this.context.viewingMessage} />
 
@@ -50,20 +53,7 @@ class UserConversationHistoryPanel extends React.Component {
             );
           })}
 
-          {/* Padding */}
-          <article
-            className="media"
-            key={`response-padding`}
-            id="response-padding"
-          >
-            <div className="media-content">
-              <div className="content">
-                <p>
-                  <br />
-                </p>
-              </div>
-            </div>
-          </article>
+          <p key={"response-padding"} id="response-padding"></p>
         </div>
       </article>
     );

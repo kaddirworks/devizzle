@@ -44,7 +44,5 @@ class MessagingProfile(BaseModel):
     reputation: int
     ranking: int
 
-    messages: list = []
-
     class Config:
         orm_mode = True

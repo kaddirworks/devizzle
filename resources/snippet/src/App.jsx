@@ -80,13 +80,16 @@ class App extends React.Component {
     };
 
     this.handle401 = this.handle401.bind(this);
+    this.loadMoreConversations = this.loadMoreConversations.bind(this);
 
     this.state = {
       error: null,
       userInfo: null,
       messages: [],
+      offset: 0,
       setUserInfo: this.setUserInfo,
       handle401: this.handle401,
+      loadMoreConversations: this.loadMoreConversations,
       set: this.set,
     };
   }
@@ -100,6 +103,22 @@ class App extends React.Component {
       mustRelogin: true,
     });
     this.setUserInfo(null);
+  }
+
+  loadMoreConversations() {
+    client.get(
+      `/bottles/my-messages?skip=${this.state.offset}&limit=5`,
+      {},
+      (res) => {
+        let data = res.data;
+        this.setState({ messages: this.state.messages.concat(data) });
+      },
+      (error) => {
+        if (error.code == 401) this.handle401();
+        else this.setError(error.data.message);
+      }
+    );
+    this.setState({ offset: this.state.offset + 5 });
   }
 
   componentDidMount() {
@@ -142,7 +161,6 @@ class App extends React.Component {
           reputation: data.reputation,
           ranking: data.ranking,
         });
-        this.setState({ messages: data.messages });
       },
       (error) => {
         if (error.code == 401) this.handle401();
@@ -151,7 +169,7 @@ class App extends React.Component {
     );
     client.get("/bottles/receive");
     client.get(
-      "/bottles/my-messages",
+      `/bottles/my-messages?limit=5`,
       {},
       (res) => {
         let data = res.data;
@@ -163,6 +181,7 @@ class App extends React.Component {
         else this.setError(error.data.message);
       }
     );
+    this.setState({ offset: this.state.offset + 5 });
   }
 
   render() {
