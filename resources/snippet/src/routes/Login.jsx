@@ -56,50 +56,55 @@ class Login extends React.Component {
 
   render() {
     return (
-      <section className="section">
-        <form className="box">
-          <h1 className="title">Login</h1>
+      <div className="container">
+        <div className="content">
+          <section className="section">
+            <form className="box">
+              <h1 className="title">Login</h1>
 
-          {this.state.error && (
-            <p className="tag is-danger is-medium" id="message">
-              {this.state.error}
+              {this.state.error && (
+                <p className="tag is-danger is-medium" id="message">
+                  {this.state.error}
+                </p>
+              )}
+
+              {this.context.userInfo && !this.context.mustRelogin && (
+                <Navigate to="/profile" />
+              )}
+
+              <div className="field">
+                <input
+                  className="input"
+                  type="text"
+                  name="username"
+                  id="username"
+                  placeholder="Username"
+                />
+              </div>
+              <div className="field">
+                <input
+                  className="input"
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="Password"
+                />
+              </div>
+              <input
+                className="button is-primary"
+                type="submit"
+                value="Submit"
+                onClick={this.onSubmit}
+                onSubmit={this.onSubmit}
+              />
+            </form>
+            <p>
+              Does not have an account? Sign up <Link to="/register">here</Link>
+              .
             </p>
-          )}
-
-          {this.context.userInfo && !this.context.mustRelogin && (
-            <Navigate to="/profile" />
-          )}
-
-          <div className="field">
-            <input
-              className="input"
-              type="text"
-              name="username"
-              id="username"
-              placeholder="Username"
-            />
-          </div>
-          <div className="field">
-            <input
-              className="input"
-              type="password"
-              name="password"
-              id="password"
-              placeholder="Password"
-            />
-          </div>
-          <input
-            className="button is-primary"
-            type="submit"
-            value="Submit"
-            onClick={this.onSubmit}
-            onSubmit={this.onSubmit}
-          />
-        </form>
-        <p>
-          Does not have an account? Sign up <Link to="/register">here</Link>.
-        </p>
-      </section>
+          </section>
+        </div>
+      </div>
     );
   }
 }

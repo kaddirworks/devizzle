@@ -16,7 +16,7 @@ class UserConversationHistoryItem extends React.Component {
             ? "Me"
             : "Someone"}
         </strong>
-        <small> {new Date().toLocaleString()}</small>
+        <small> {new Date(this.props.message.send_date).toLocaleString()}</small>
         <p>{this.props.message.text}</p>
       </blockquote>
     );

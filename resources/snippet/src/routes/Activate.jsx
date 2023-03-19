@@ -40,19 +40,23 @@ function Activate() {
   }, [result]);
 
   return (
-    <section className="section">
-      <div className="box">
-        {!result && <h1>Activating...</h1>}
-        {result && (
-          <>
-            <h1>{result}</h1>
-            <p>
-              You can now go to your <Link to="/profile">profile</Link>.
-            </p>
-          </>
-        )}
+    <div className="container">
+      <div className="content">
+        <section className="section">
+          <div className="box">
+            {!result && <h1>Activating...</h1>}
+            {result && (
+              <>
+                <h1>{result}</h1>
+                <p>
+                  You can now go to your <Link to="/profile">profile</Link>.
+                </p>
+              </>
+            )}
+          </div>
+        </section>
       </div>
-    </section>
+    </div>
   );
 }
 

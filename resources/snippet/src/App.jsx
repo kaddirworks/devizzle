@@ -22,9 +22,7 @@ const decorated = (Component) => {
   return (
     <>
       <Navbar />
-      <div className="container is-fluid">
-        <div className="content">{Component}</div>
-      </div>
+      {Component}
       <Footer />
     </>
   );

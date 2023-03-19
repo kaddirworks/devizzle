@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+
 import UserContext from "../../context/user";
 
 class UserMessagesBrowserPanel extends React.Component {
@@ -22,46 +24,91 @@ class UserMessagesBrowserPanel extends React.Component {
 
   render() {
     return (
-      <nav className="panel">
-        <p className="panel-heading">Conversations</p>
-        <div
-          style={{
-            maxHeight: "30em",
-            minHeight: "30em",
-            height: "30em",
-            overflow: "auto",
-          }}
-        >
-          {this.context.messages.map((message) => {
-            return (
-              <a
-                key={`message-list-item-${message.id}`}
-                className={
-                  this.context.viewingMessage &&
-                  message.id == this.context.viewingMessage.id
-                    ? "panel-block is-active"
-                    : "panel-block"
-                }
-                target={message.id}
-                onClick={this.changeViewingMessage}
-              >
-                <span className="panel-icon">
-                  <i className="fa-solid fa-comment"></i>
+      <div className="tile is-parent">
+        <article className="tile is-child">
+          <div className="content">
+            <div className="menu">
+              <p className="menu-label">
+                Your Conversations{" "}
+                <span>
+                  <Link
+                    className="is-link"
+                    to="/write"
+                    title="Write New Message"
+                  >
+                    <i className="fa-solid fa-pencil"></i>
+                  </Link>{" "}
+                  <a
+                    className="is-link"
+                    onClick={this.context.loadMoreConversations}
+                    title="Load More"
+                  >
+                    <i class="fa-solid fa-snowplow"></i>
+                  </a>
                 </span>
-                Someone #{message.profile_id}
-              </a>
-            );
-          })}
-        </div>
-        <div className="panel-block">
-          <button
-            className="button is-link is-fullwidth"
-            onClick={this.context.loadMoreConversations}
-          >
-            Load More
-          </button>
-        </div>
-      </nav>
+              </p>
+              <div
+                className="menu-list"
+                style={{
+                  maxHeight: "30em",
+                  minHeight: "30em",
+                  height: "30em",
+                  overflow: "auto",
+                }}
+              >
+                {this.context.messages.map((message) => {
+                  return (
+                    <a
+                      className={
+                        this.context.viewingMessage == message
+                          ? "is-active"
+                          : ""
+                      }
+                      key={`message-list-item-${message.id}`}
+                      target={message.id}
+                      onClick={this.changeViewingMessage}
+                    >
+                      Someone #{message.profile_id}
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+            {/* <div className="content">
+              <button
+                className="button is-link is-fullwidth"
+                onClick={this.context.loadMoreConversations}
+              >
+                Load More
+              </button>
+            </div>
+            <div
+              className="content"
+              style={{
+                maxHeight: "30em",
+                minHeight: "30em",
+                height: "30em",
+                overflow: "auto",
+              }}
+            >
+              {this.context.messages.map((message) => {
+                return (
+                  <p>
+                    <a
+                      className="link"
+                      key={`message-list-item-${message.id}`}
+                      target={message.id}
+                      onClick={this.changeViewingMessage}
+                    >
+                      Someone #{message.profile_id}
+                    </a>
+                  </p>
+                );
+              })}
+            </div> */}
+          </div>
+        </article>
+      </div>
     );
   }
 }

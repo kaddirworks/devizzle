@@ -44,24 +44,25 @@ class UserConversationReplyForm extends React.Component {
 
   render() {
     return (
-      <form className="container is-fluid">
-        <div className="columns">
-          <div className="column">
+      <form className="column">
+        <div className="field has-addons">
+          <div className="control is-expanded">
             <input
-              className="input is-fullwidth"
+              className="input"
               type="text"
               placeholder="Type something..."
               name="response"
               id="response"
             />
           </div>
-          <div className="column is-narrow">
-            <input
+
+          <div className="control">
+            <button
               className="button is-primary"
-              type="submit"
-              value="Send"
               onClick={this.handleSendResponse}
-            />
+            >
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
           </div>
         </div>
       </form>

@@ -25,21 +25,25 @@ class Profile extends React.Component {
 
     return (
       <>
-        <section className="section">
-          <h1>
-            Welcome back, <strong>{this.context.userInfo.username}</strong>!
-          </h1>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit.
-            Exercitationem at beatae, molestiae, ea distinctio similique,
-            deleniti esse et temporibus cum provident accusamus laborum natus
-            ratione ipsam rem blanditiis corrupti itaque.
-          </p>
-          <UserMessagesPanel />
-        </section>
-        <section className="section">
-          <UserBasicInfoPanel />
-        </section>
+        <div className="container">
+          <div className="content">
+            <section className="section">
+              <h1>
+                Welcome back, <strong>{this.context.userInfo.username}</strong>!
+              </h1>
+              <p>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                Exercitationem at beatae, molestiae, ea distinctio similique,
+                deleniti esse et temporibus cum provident accusamus laborum
+                natus ratione ipsam rem blanditiis corrupti itaque.
+              </p>
+              <UserMessagesPanel />
+            </section>
+            <section className="section">
+              <UserBasicInfoPanel />
+            </section>
+          </div>
+        </div>
       </>
     );
   }
