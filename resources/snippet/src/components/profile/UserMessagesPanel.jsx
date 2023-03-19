@@ -14,7 +14,7 @@ class UserMessagesPanel extends React.Component {
 
   render() {
     return (
-      <div className="box">
+      <>
         <h2>
           Messages{" "}
           <span>
@@ -45,7 +45,7 @@ class UserMessagesPanel extends React.Component {
             </div>
           </div>
         )}
-      </div>
+      </>
     );
   }
 }

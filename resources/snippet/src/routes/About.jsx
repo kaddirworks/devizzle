@@ -1,9 +1,13 @@
 import React from "react";
 
-function About() {
-  return (
-    <div className="container is-fluid">
-      <div className="content">
+class About extends React.Component {
+  constructor({ props }) {
+    super(props);
+  }
+
+  render() {
+    return (
+      <section className="section">
         <h1>About</h1>
         <p>
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Recusandae,
@@ -48,9 +52,8 @@ function About() {
           quos architecto! Aut saepe consequatur nesciunt accusantium illo
           deleniti exercitationem voluptatem impedit? Et.
         </p>
-      </div>
-    </div>
-  );
+      </section>
+    );
+  }
 }
-
 export default About;

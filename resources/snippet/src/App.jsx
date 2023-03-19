@@ -13,40 +13,55 @@ import Profile from "./routes/Profile";
 import Write from "./routes/Write";
 import Activate from "./routes/Activate";
 
-import { withNavBar } from "./components/Navbar";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+
+import client from "./client";
+
+const decorated = (Component) => {
+  return (
+    <>
+      <Navbar />
+      <div className="container is-fluid">
+        <div className="content">{Component}</div>
+      </div>
+      <Footer />
+    </>
+  );
+};
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: withNavBar(<Home />),
+    element: decorated(<Home />),
   },
   {
     path: "/about",
-    element: withNavBar(<About />),
+    element: decorated(<About />),
   },
   {
     path: "/login",
-    element: withNavBar(<Login />),
+    element: decorated(<Login />),
   },
   {
     path: "/register",
-    element: withNavBar(<Register />),
+    element: decorated(<Register />),
   },
   {
     path: "/signout",
-    element: withNavBar(<SignOut />),
+    element: decorated(<SignOut />),
   },
   {
     path: "/activate/:secretCode",
-    element: withNavBar(<Activate />),
+    element: decorated(<Activate />),
   },
   {
     path: "/profile",
-    element: withNavBar(<Profile />),
+    element: decorated(<Profile />),
   },
   {
     path: "/write",
-    element: withNavBar(<Write />),
+    element: decorated(<Write />),
   },
 ]);
 
@@ -64,11 +79,14 @@ class App extends React.Component {
       this.setState(data);
     };
 
+    this.handle401 = this.handle401.bind(this);
+
     this.state = {
       error: null,
       userInfo: null,
       messages: [],
       setUserInfo: this.setUserInfo,
+      handle401: this.handle401,
       set: this.set,
     };
   }
@@ -112,85 +130,51 @@ class App extends React.Component {
       accessToken,
     });
 
-    // try to get the profile info
-    fetch("http://localhost:8000/bottles/profile", {
-      headers: {
-        Authorization: "Bearer " + accessToken,
-      },
-    }).then(
+    client.get(
+      "/bottles/profile",
+      {},
       (res) => {
-        res.json().then(
-          (data) => {
-            if (!res.ok) {
-              if (res.status == 401) this.handle401();
-              else setError(data.detail);
-            } else {
-              this.setState({
-                dateRegistered: new Date(
-                  data.date_created
-                ).toLocaleDateString(),
-                sentCount: data.sent_count,
-                receivedCount: data.received_count,
-                reputation: data.reputation,
-                ranking: data.ranking,
-              });
-              this.setState({ messages: data.messages });
-            }
-          },
-          (err) => this.setError(JSON.stringify(err))
-        );
+        let data = res.data;
+        this.setState({
+          dateRegistered: new Date(data.date_created).toLocaleDateString(),
+          sentCount: data.sent_count,
+          receivedCount: data.received_count,
+          reputation: data.reputation,
+          ranking: data.ranking,
+        });
+        this.setState({ messages: data.messages });
       },
-      (err) => this.setError(JSON.stringify(err))
+      (error) => {
+        if (error.code == 401) this.handle401();
+        else this.setError(error.data.message);
+      }
     );
-
-    // try to add new message
-    fetch("http://localhost:8000/bottles/receive", {
-      headers: {
-        Authorization: "Bearer " + accessToken,
-      },
-    }).then(
+    client.get("/bottles/receive");
+    client.get(
+      "/bottles/my-messages",
+      {},
       (res) => {
-        if (res.status == 401) this.handle401();
+        let data = res.data;
+        this.setState({ messages: data });
+        this.setState({ viewingMessage: data[0] });
       },
-      (err) => this.setError(JSON.stringify(err))
-    );
-
-    // try to get the messages
-    fetch("http://localhost:8000/bottles/my-messages", {
-      headers: {
-        Authorization: "Bearer " + accessToken,
-      },
-    }).then(
-      (res) => {
-        res.json().then(
-          (data) => {
-            if (!res.ok) {
-              if (res.status == 401) this.handle401();
-              else this.setError(data.detail);
-            }
-            this.setState({ messages: data });
-            this.setState({ viewingMessage: data[0] });
-          },
-          (err) => this.setError(JSON.stringify(err))
-        );
-        // do nothing, the message was added in the background
-      },
-      (err) => this.setError(JSON.stringify(err))
+      (error) => {
+        if (error.code == 401) this.handle401();
+        else this.setError(error.data.message);
+      }
     );
   }
 
   render() {
     return (
-      <div className="container is-fluid">
-        <div className="content">
-          {this.state.error && <h1>{this.state.error}</h1>}
-          {!this.state.error && (
-            <UserContext.Provider value={this.state}>
-              <RouterProvider router={router} />
-            </UserContext.Provider>
-          )}
-        </div>
-      </div>
+      <>
+        {this.state.error && <h1>{this.state.error}</h1>}
+        {!this.state.error && (
+          <UserContext.Provider value={this.state}>
+            <RouterProvider router={router} />
+          </UserContext.Provider>
+        )}
+      </>
     );
   }
 }

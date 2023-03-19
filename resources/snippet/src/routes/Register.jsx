@@ -37,68 +37,65 @@ function Register() {
   }
 
   return (
-    <div className="container is-fluid">
-      <div className="content">
-        <form className="box">
-          {isDone && <h1>A confirmation message was sent to {usedEmail}!</h1>}
-          {!isDone && (
-            <>
-              <h1>Register</h1>
+    <section className="section">
+      <form className="box">
+        {isDone && <h1>A confirmation message was sent to {usedEmail}!</h1>}
+        {!isDone && (
+          <>
+            <h1>Register</h1>
 
-              {error && <p className="tag is-danger is-medium">{error}</p>}
+            {error && <p className="tag is-danger is-medium">{error}</p>}
 
-              <div className="field">
-                <input
-                  className="input"
-                  type="text"
-                  name="username"
-                  id="username"
-                  placeholder="Username"
-                />
-              </div>
-              <div className="field">
-                <input
-                  className="input"
-                  type="email"
-                  name="email"
-                  id="email"
-                  placeholder="Email"
-                />
-              </div>
-              <div className="field">
-                <input
-                  className="input"
-                  type="password"
-                  name="password"
-                  id="password"
-                  placeholder="Password"
-                />
-              </div>
-              <div className="field">
-                <input
-                  className="input"
-                  type="password"
-                  name="passwordConfirmation"
-                  id="passwordConfirmation"
-                  placeholder="Password Confirmation"
-                />
-              </div>
+            <div className="field">
               <input
-                className="button is-primary"
-                type="submit"
-                value="Submit"
-                onClick={onSubmit}
-                onSubmit={onSubmit}
+                className="input"
+                type="text"
+                name="username"
+                id="username"
+                placeholder="Username"
               />
-            </>
-          )}
-        </form>
-        <p>
-          Already have an account? Click <Link to="/login">here</Link> to sign
-          in.
-        </p>
-      </div>
-    </div>
+            </div>
+            <div className="field">
+              <input
+                className="input"
+                type="email"
+                name="email"
+                id="email"
+                placeholder="Email"
+              />
+            </div>
+            <div className="field">
+              <input
+                className="input"
+                type="password"
+                name="password"
+                id="password"
+                placeholder="Password"
+              />
+            </div>
+            <div className="field">
+              <input
+                className="input"
+                type="password"
+                name="passwordConfirmation"
+                id="passwordConfirmation"
+                placeholder="Password Confirmation"
+              />
+            </div>
+            <input
+              className="button is-primary"
+              type="submit"
+              value="Submit"
+              onClick={onSubmit}
+              onSubmit={onSubmit}
+            />
+          </>
+        )}
+      </form>
+      <p>
+        Already have an account? Click <Link to="/login">here</Link> to sign in.
+      </p>
+    </section>
   );
 }
 

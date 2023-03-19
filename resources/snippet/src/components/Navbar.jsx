@@ -9,24 +9,41 @@ class Navbar extends React.Component {
     super(props);
   }
 
+  componentDidMount() {
+    // Get all "navbar-burger" elements
+    const $navbarBurgers = Array.prototype.slice.call(
+      document.querySelectorAll(".navbar-burger"),
+      0
+    );
+
+    // Add a click event on each of them
+    $navbarBurgers.forEach((el) => {
+      el.addEventListener("click", () => {
+        // Get the target from the "data-target" attribute
+        const target = el.dataset.target;
+        const $target = document.getElementById(target);
+
+        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+        el.classList.toggle("is-active");
+        $target.classList.toggle("is-active");
+      });
+    });
+  }
+
   render() {
     return (
       <UserContext.Consumer>
         {({ userInfo, setUserInfo }) => {
           return (
             <nav
-              className="navbar"
+              className="navbar is-link"
               role="navigation"
               aria-label="main navigation"
             >
               <div className="navbar-brand">
-                <a className="navbar-item" href="https://bulma.io">
-                  <img
-                    src="https://bulma.io/images/bulma-logo.png"
-                    width="112"
-                    height="28"
-                  />
-                </a>
+                <NavLink className="navbar-item" to="/">
+                  <strong>Devizzle</strong>
+                </NavLink>
                 <a
                   role="button"
                   className="navbar-burger"
@@ -80,16 +97,5 @@ class Navbar extends React.Component {
     );
   }
 }
-
-function withNavBar(component) {
-  return (
-    <div>
-      <Navbar />
-      {component}
-    </div>
-  );
-}
-
-export { withNavBar };
 
 export default Navbar;

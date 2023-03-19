@@ -22,13 +22,13 @@ class UserConversationHistoryPanel extends React.Component {
   }
 
   componentDidMount() {
-    this.scrollChat();
+    // this.scrollChat();
   }
 
   render() {
     return (
       <article className="panel is-info">
-        <p className="panel-heading">{this.context.viewingMessage.text}</p>
+        <p className="panel-heading">Someone #{this.context.viewingMessage.profile_id}</p>
 
         <div
           className="container is-fluid"

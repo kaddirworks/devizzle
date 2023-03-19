@@ -10,8 +10,7 @@ class UserBasicInfoPanel extends React.Component {
 
   render() {
     return (
-      <div className="box">
-        <h2>Stats</h2>
+      <>
         <nav className="level">
           <div className="level-item has-text-centered">
             <div>
@@ -44,7 +43,7 @@ class UserBasicInfoPanel extends React.Component {
             </div>
           </div>
         </nav>
-      </div>
+      </>
     );
   }
 }

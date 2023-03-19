@@ -1,7 +1,5 @@
-function getClientSpec() {
-  return {
-    apiServerAddress: import.meta.env["VITE_API_SERVER_ADDRESS"],
-  };
-}
+import Client from "./Client";
 
-export default getClientSpec;
+const client = new Client();
+
+export default client;

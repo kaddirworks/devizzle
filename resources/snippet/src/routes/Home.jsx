@@ -1,9 +1,13 @@
 import React from "react";
 
-function Home() {
-  return (
-    <div className="container  is-fluid">
-      <div className="content">
+class Home extends React.Component {
+  constructor({ props }) {
+    super(props);
+  }
+
+  render() {
+    return (
+      <section className="section">
         <h1>Home</h1>
         <p>
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Error debitis
@@ -20,8 +24,8 @@ function Home() {
           cum perferendis, in praesentium vero repellat nemo reprehenderit at
           officiis ea neque voluptatem molestias aspernatur?
         </p>
-      </div>
-    </div>
-  );
+      </section>
+    );
+  }
 }
 export default Home;

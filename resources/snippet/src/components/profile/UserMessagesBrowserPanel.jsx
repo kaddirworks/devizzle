@@ -53,7 +53,7 @@ class UserMessagesBrowserPanel extends React.Component {
                 <span className="panel-icon">
                   <i className="fa-solid fa-comment"></i>
                 </span>
-                {message.text}
+                Someone #{message.profile_id}
               </a>
             );
           })}

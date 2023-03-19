@@ -1,6 +1,8 @@
 import React from "react";
 import UserContext from "../../context/user";
 
+import client from "../../client";
+
 class UserConversationReplyForm extends React.Component {
   static contextType = UserContext;
 
@@ -14,36 +16,29 @@ class UserConversationReplyForm extends React.Component {
 
     let form = document.forms[0];
     let response = new FormData(form).get("response");
-    let body = JSON.stringify({
+    let body = {
       response,
       responding_to_id: this.context.viewingMessage.id,
-    });
+    };
 
-    fetch("http://localhost:8000/bottles/respond", {
-      headers: {
-        Authorization: "Bearer " + this.context.userInfo.accessToken,
+    client.post(
+      "/bottles/respond",
+      {
         "Content-Type": "application/json",
       },
-      method: "POST",
       body,
-    }).then(
       (res) => {
-        res.json().then(
-          (data) => {
-            if (!res.ok) this.setError(JSON.stringify(data.detail));
-            else {
-              let newViewingMessage = { ...this.context.viewingMessage };
-              newViewingMessage.responses.push(data);
-              this.context.set({
-                viewingMessage: newViewingMessage,
-              });
-              document.querySelector("#response").value = "";
-            }
-          },
-          (err) => this.setError(JSON.stringify(err))
-        );
+        let data = res.data;
+        let newViewingMessage = { ...this.context.viewingMessage };
+        newViewingMessage.responses.push(data);
+        this.context.set({
+          viewingMessage: newViewingMessage,
+        });
+        document.querySelector("#response").value = "";
       },
-      (err) => this.setError(JSON.stringify(err))
+      (error) => {
+        if (error.code == 401) this.context.handle401();
+      }
     );
   }
 

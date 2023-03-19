@@ -16,33 +16,31 @@ class Profile extends React.Component {
   render() {
     if (!this.context.userInfo)
       return (
-        <div className="container is-fluid">
-          <div className="content">
-            <p>Loading...</p>
-          </div>
-        </div>
+        <section className="section">
+          <p>Loading...</p>
+        </section>
       );
 
     if (this.context.mustRelogin) return <Navigate to="/login" />;
 
     return (
-      <div className="container is-fluid">
-        <div className="content">
+      <>
+        <section className="section">
           <h1>
             Welcome back, <strong>{this.context.userInfo.username}</strong>!
           </h1>
-
-          <UserBasicInfoPanel />
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+            Exercitationem at beatae, molestiae, ea distinctio similique,
+            deleniti esse et temporibus cum provident accusamus laborum natus
+            ratione ipsam rem blanditiis corrupti itaque.
+          </p>
           <UserMessagesPanel />
-        </div>
-
-        <div
-          className="container"
-          style={{
-            marginBottom: "10em",
-          }}
-        ></div>
-      </div>
+        </section>
+        <section className="section">
+          <UserBasicInfoPanel />
+        </section>
+      </>
     );
   }
 }

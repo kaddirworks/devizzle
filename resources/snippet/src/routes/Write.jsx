@@ -56,33 +56,31 @@ class Write extends React.Component {
 
   render() {
     return (
-      <div className="container is-fluid">
-        <div className="content">
-          {this.state.result && <h1>{this.state.result}</h1>}
-          {!this.state.result && (
-            <>
-              <h1>Write a New Message</h1>
-              <form>
-                <div className="field">
-                  <textarea
-                    name="message"
-                    id="message"
-                    className="textarea"
-                    placeholder="Type something..."
-                  ></textarea>
-                </div>
-                <input
-                  className="button is-primary"
-                  type="submit"
-                  value="Send"
-                  onClick={this.handleSubmit}
-                  onSubmit={this.handleSubmit}
-                />
-              </form>
-            </>
-          )}
-        </div>
-      </div>
+      <section className="section">
+        {this.state.result && <h1>{this.state.result}</h1>}
+        {!this.state.result && (
+          <>
+            <h1>Write a New Message</h1>
+            <form>
+              <div className="field">
+                <textarea
+                  name="message"
+                  id="message"
+                  className="textarea"
+                  placeholder="Type something..."
+                ></textarea>
+              </div>
+              <input
+                className="button is-primary"
+                type="submit"
+                value="Send"
+                onClick={this.handleSubmit}
+                onSubmit={this.handleSubmit}
+              />
+            </form>
+          </>
+        )}
+      </section>
     );
   }
 }
