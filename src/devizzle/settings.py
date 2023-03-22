@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
 
     allowed_origin: str
+    running_from: str
 
     class Config:
         env_file = ".env"

@@ -4,6 +4,7 @@ import smtplib, ssl, email.utils
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import jwt
@@ -87,18 +88,7 @@ def activate(activation_code: str, db: Session = Depends(core.get_db)):
             detail="Could not process your activation request. Please check if this user has already been activated.",
         )
 
-    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
-    access_token = create_access_token(
-        {"sub": user.username}, expires_delta=access_token_expires
-    )
-
-    expiration = datetime.utcnow() + access_token_expires
-    return schemas.Token(
-        access_token=access_token,
-        token_type="bearer",
-        username=user_activation.username,
-        expiration=expiration,
-    )
+    return RedirectResponse(f'{settings.allowed_origin}/activate')
 
 
 def send_email(receiver: str, subject: str, content: str):
@@ -135,7 +125,7 @@ def send_activation_code(receiver: str, secret_code: str, username: str):
         f"Hello, {username}.\n"
         f"This is your activation code for Devizzle. "
         f"Please click the link to activate your account.\n"
-        f"{settings.allowed_origin}/activate/{secret_code}\n\n"
+        f"{settings.running_from}/auth/activate/{secret_code}\n\n"
         f"If you dont know what this email is about, please ignore it "
         f"as it will not be sent again."
     )

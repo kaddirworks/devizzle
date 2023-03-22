@@ -7,10 +7,7 @@ from devizzle.core import core
 from devizzle.core.auth import auth
 
 
-router = APIRouter(prefix="/bottles", tags=["bottles"])
-
-
-def get_messaging_profile(
+def ensure_messaging_profile(
     current_user: auth.models.User = Depends(core.get_current_user),
     db: Session = Depends(core.get_db),
 ):
@@ -25,6 +22,24 @@ def get_messaging_profile(
         db.add(messaging_profile)
         db.commit()
         db.refresh(messaging_profile)
+
+
+router = APIRouter(
+    prefix="/bottles",
+    tags=["bottles"],
+    dependencies=[Depends(ensure_messaging_profile)],
+)
+
+
+def get_messaging_profile(
+    current_user: auth.models.User = Depends(core.get_current_user),
+    db: Session = Depends(core.get_db),
+):
+    messaging_profile = (
+        db.query(models.MessagingProfile)
+        .filter(models.MessagingProfile.user_id == current_user.id)
+        .first()
+    )
 
     return messaging_profile
 
@@ -117,7 +132,7 @@ def respond_to_message(
 @router.get("/my-messages", response_model=list[schemas.Message])
 def read_my_messages(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 5,
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
     db: Session = Depends(core.get_db),
 ):
@@ -143,15 +158,8 @@ def read_my_messages(
     return messages
 
 
-@router.get("/profile", response_model=schemas.MessagingProfile)
+@router.get("/profile")
 def read_my_profile(
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
-    db: Session = Depends(core.get_db),
 ):
-    return schemas.MessagingProfile(
-        id=messaging_profile.id,
-        date_created=messaging_profile.date_created,
-        received_count=messaging_profile.received_count,
-        reputation=messaging_profile.reputation,
-        sent_count=messaging_profile.sent_count,
-    )
+    return messaging_profile
