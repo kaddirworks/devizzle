@@ -1,6 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import true
 
 from . import schemas, models
 from devizzle import core
@@ -169,6 +170,7 @@ def read_my_messages(
         db.query(models.Message)
         .filter(models.Message.profile_id == messaging_profile.id)
         .filter(models.Message.responding_to_id == None)
+        .filter(models.Message.reported.not_in([true()]))
         .offset(skip)
         .limit(limit)
         .all()
@@ -178,6 +180,7 @@ def read_my_messages(
         db.query(models.Message)
         .filter(models.Message.reader_id == messaging_profile.id)
         .filter(models.Message.responding_to_id == None)
+        .filter(models.Message.reported.not_in([true()]))
         .offset(skip)
         .limit(limit)
         .all()
