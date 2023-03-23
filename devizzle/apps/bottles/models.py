@@ -29,6 +29,7 @@ class Message(Base):
     text = Column(String, nullable=False)
     send_date = Column(DateTime, default=datetime.now)
     read_date = Column(DateTime, default=None, nullable=True)
+    reported = Column(Boolean, nullable=True)
 
     profile_id = Column(ForeignKey("messaging_profiles.id"), nullable=False)
     profile = relationship("MessagingProfile", foreign_keys=[profile_id])
@@ -42,3 +43,14 @@ class Message(Base):
     responding_to = relationship(
         "Message", back_populates="responses", remote_side=[id]
     )
+
+
+class Report(Base):
+    __tablename__ = "reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    report_date = Column(DateTime, default=datetime.now)
+    last_update = Column(DateTime, default=datetime.now)
+    message_id = Column(ForeignKey("messages.id"), nullable=False)
+    justified = Column(Boolean, default=True)
+    notes = Column(String)

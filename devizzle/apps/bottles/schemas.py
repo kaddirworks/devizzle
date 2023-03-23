@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class MessageBase(BaseModel) :
+class MessageBase(BaseModel):
     id: int
     text: str
     send_date: datetime
@@ -26,3 +26,12 @@ class MessageSendForm(BaseModel):
 class MessageResponseForm(BaseModel):
     responding_to_id: int
     response: str
+
+
+class MessageReportResult(BaseModel):
+    id: int
+    report_date: datetime
+    message_id: int
+    
+    class Config:
+        orm_mode = True

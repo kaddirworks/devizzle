@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from . import schemas, models
 from devizzle import core
 from devizzle.apps.auth import auth
+from devizzle.apps.bottles import bottles
 
 
 def ensure_user_is_admin(
@@ -127,5 +128,90 @@ def search_users(
         query = query.filter(auth.models.User.is_admin == is_admin)
     if is_disabled is not None:
         query = query.filter(auth.models.User.is_disabled == is_disabled)
+
+    return query.offset(skip).limit(limit).all()
+
+
+@router.put("/reports/{report_id}")
+def update_report(
+    report_id: int,
+    report_form: schemas.ReportForm,
+    db: Session = Depends(core.get_db),
+):
+    report = (
+        db.query(bottles.models.Report)
+        .filter(bottles.models.Report.id == report_id)
+        .first()
+    )
+    if not report:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    message = (
+        db.query(bottles.models.Message)
+        .filter(bottles.models.Message.id == report.message_id)
+        .first()
+    )
+
+    if report_form.justified is not None:
+        report.justified = report_form.justified
+        message.reported = report.justified
+
+    if report_form.notes is not None:
+        report.notes = report_form.notes
+
+    report.last_update = datetime.now()
+
+    db.commit()
+    db.refresh(report)
+
+    return report
+
+
+@router.get("/reports")
+def list_reports(
+    skip: int = 0,
+    limit: int = 5,
+    db: Session = Depends(core.get_db),
+):
+    return db.query(bottles.models.Report).offset(skip).limit(limit).all()
+
+
+@router.get("/report-search")
+def search_reports(
+    message_id: int = None,
+    report_date_min: datetime = None,
+    report_date_max: datetime = None,
+    last_update_min: datetime = None,
+    last_update_max: datetime = None,
+    justified: bool = None,
+    skip: int = 0,
+    limit: int = 5,
+    db: Session = Depends(core.get_db),
+):
+    if report_date_min is None:
+        report_date_min = datetime.fromtimestamp(0)
+    if last_update_min is None:
+        last_update_min = datetime.fromtimestamp(0)
+
+    if report_date_max is None:
+        report_date_max = datetime.now()
+    if last_update_max is None:
+        last_update_max = datetime.now()
+
+    query = (
+        db.query(bottles.models.Report)
+        .filter(
+            bottles.models.Report.report_date.between(report_date_min, report_date_max)
+        )
+        .filter(
+            bottles.models.Report.last_update.between(last_update_min, last_update_max)
+        )
+    )
+
+    if message_id is not None:
+        query = query.filter(bottles.models.Report.message_id == message_id)
+
+    if justified is not None:
+        query = query.filter(bottles.models.Report.justified == justified)
 
     return query.offset(skip).limit(limit).all()

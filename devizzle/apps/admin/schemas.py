@@ -8,3 +8,8 @@ class UserForm(BaseModel):
     password: str | None = None
     is_admin: bool | None = None
     is_disabled: bool | None = None
+
+
+class ReportForm(BaseModel):
+    justified: bool | None = None
+    notes: str | None = None

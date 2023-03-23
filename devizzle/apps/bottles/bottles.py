@@ -129,6 +129,35 @@ def respond_to_message(
     return response
 
 
+@router.post("/report/{message_id}", response_model=schemas.MessageReportResult)
+def report_message(
+    message_id: int,
+    messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
+    db: Session = Depends(core.get_db),
+):
+    message = db.query(models.Message).filter_by(id=message_id).first()
+    if not message:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    if (
+        message.profile_id != messaging_profile.id
+        and message.reader_id != messaging_profile.id
+    ):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    message.reported = True
+    message_report = models.Report(message_id=message.id)
+
+    try:
+        db.add(message_report)
+        db.commit()
+        db.refresh(message_report)
+    except:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+    return message_report
+
+
 @router.get("/my-messages", response_model=list[schemas.Message])
 def read_my_messages(
     skip: int = 0,
