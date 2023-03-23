@@ -11,8 +11,8 @@ from jose import jwt
 
 from email.message import EmailMessage
 
-from devizzle.core.auth import models, schemas
-from devizzle.core import core
+from devizzle import core
+from devizzle.apps.auth import models, schemas
 from devizzle.settings import settings
 
 

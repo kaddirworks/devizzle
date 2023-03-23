@@ -17,9 +17,13 @@ class RegistrationForm(BaseModel):
 
 
 class User(BaseModel):
+    id: int
     username: str
     email: str
-    disabled: bool | None = None
+    reg_date: datetime
+    last_update: datetime
+    is_admin: bool | None = None
+    is_disabled: bool | None = None
 
     class Config:
         orm_mode = True

@@ -17,6 +17,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
 
     is_admin = Column(Boolean, default=False)
+    is_disabled = Column(Boolean, default=False)
 
 
 class UserActivation(Base):

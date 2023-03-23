@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Integer, Column, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
-from devizzle.core.auth import models
+from devizzle.apps.auth import models
 from devizzle.database import Base
 
 

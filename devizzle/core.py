@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 
 from devizzle.database import SessionLocal
-from devizzle.core.auth import models
+from devizzle.apps.auth import models
 from devizzle.settings import settings
 
 
@@ -52,5 +52,12 @@ def get_current_user(
     user = get_user(username, db)
     if not user:
         raise credentials_exception
+
+    if user.is_disabled:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="This account has been disabled.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     return user

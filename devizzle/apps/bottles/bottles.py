@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from . import schemas, models
-from devizzle.core import core
-from devizzle.core.auth import auth
+from devizzle import core
+from devizzle.apps.auth import auth
 
 
 def ensure_messaging_profile(
