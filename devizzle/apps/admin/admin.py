@@ -215,3 +215,22 @@ def search_reports(
         query = query.filter(bottles.models.Report.justified == justified)
 
     return query.offset(skip).limit(limit).all()
+
+
+@router.get("/conversation/{conversation_id}", response_model=schemas.MessageLookup)
+def get_conversation_history(
+    conversation_id: int,
+    skip_responses: int = 0,
+    limit_responses: int = 5,
+    db: Session = Depends(core.get_db),
+):
+    return {
+        "starter": db.query(bottles.models.Message)
+        .filter(bottles.models.Message.id == conversation_id)
+        .first(),
+        "history": db.query(bottles.models.Message)
+        .filter(bottles.models.Message.responding_to_id == conversation_id)
+        .offset(skip_responses)
+        .limit(limit_responses)
+        .all(),
+    }

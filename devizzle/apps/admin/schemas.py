@@ -13,3 +13,21 @@ class UserForm(BaseModel):
 class ReportForm(BaseModel):
     justified: bool | None = None
     notes: str | None = None
+
+
+class MessageLookup(BaseModel):
+    class HistoryItem(BaseModel):
+        id: int
+        text: str
+        send_date: datetime
+        reported: bool
+        profile_id: int
+        
+        class Config:
+            orm_mode = True
+
+    starter: HistoryItem
+    history: list[HistoryItem]
+
+    class Config:
+        orm_mode = True
