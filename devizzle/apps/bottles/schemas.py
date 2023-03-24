@@ -32,6 +32,17 @@ class MessageReportResult(BaseModel):
     id: int
     report_date: datetime
     message_id: int
-    
+
+    class Config:
+        orm_mode = True
+
+
+class MessagingProfile(BaseModel):
+    id: int
+    sent_count: int
+    received_count: int
+    reputation: int
+    user_id: int
+
     class Config:
         orm_mode = True

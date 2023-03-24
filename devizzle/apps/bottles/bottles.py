@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
+from sqlalchemy.sql import or_, and_
 
 from . import schemas, models
 from devizzle import core
@@ -29,6 +30,11 @@ router = APIRouter(
     prefix="/bottles",
     tags=["bottles"],
     dependencies=[Depends(ensure_messaging_profile)],
+    responses={
+        401: {
+            "description": "Either access token expired, or not present, or the user has been disabled."
+        }
+    },
 )
 
 
@@ -45,7 +51,16 @@ def get_messaging_profile(
     return messaging_profile
 
 
-@router.post("/send")
+@router.post(
+    "/send",
+    response_model=schemas.MessageBase,
+    responses={
+        200: {"description": "The message was sent.", "model": schemas.MessageBase},
+        401: {
+            "description": "Token has expired, is not present or user has been deactivated any time between login and now."
+        },
+    },
+)
 def send_message(
     form_data: schemas.MessageSendForm,
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
@@ -63,31 +78,45 @@ def send_message(
     return message
 
 
-@router.get("/receive")
+@router.get(
+    "/receive",
+    response_model=schemas.Message,
+    responses={
+        204: {
+            "description": "Either no new message was found or this account already received a message not too long ago."
+        },
+    },
+)
 def receive_message(
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
     db: Session = Depends(core.get_db),
 ):
-    # TODO: check if last used time is today, if not, pick a new message, otherwise return nothing.
+    no_new_message = HTTPException(
+        status_code=status.HTTP_204_NO_CONTENT,
+        detail="We could not find any messages.",
+    )
+
+    today_date = date.today()
+    last_used_date = messaging_profile.last_used + timedelta(hours=1)
+    last_used_date = last_used_date.date()
+    if last_used_date == today_date:
+        raise no_new_message
 
     message = (
         db.query(models.Message)
-        .filter(models.Message.profile_id != messaging_profile.id)
-        .filter(models.Message.reader_id == None)
-        .filter(models.Message.responding_to_id == None)
+        .filter(
+            models.Message.profile_id.is_not(messaging_profile.id),
+            models.Message.reader_id == None,
+            models.Message.responding_to_id == None,
+        )
         .first()
     )
     if not message:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="We could not find any messages.",
-        )
+        raise no_new_message
 
     now = datetime.now()
-
     message.read_date = now
     message.reader_id = messaging_profile.id
-    message.profile.reputation += 1
     messaging_profile.last_used = now
     messaging_profile.received_count += 1
 
@@ -98,7 +127,7 @@ def receive_message(
     return message
 
 
-@router.post("/respond")
+@router.post("/respond", response_model=schemas.Message)
 def respond_to_message(
     message_response_form: schemas.MessageResponseForm,
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
@@ -109,7 +138,6 @@ def respond_to_message(
         profile_id=messaging_profile.id,
         responding_to_id=message_response_form.responding_to_id,
     )
-
     responding_to = (
         db.query(models.Message)
         .filter(models.Message.id == message_response_form.responding_to_id)
@@ -118,6 +146,7 @@ def respond_to_message(
 
     messaging_profile.last_used = datetime.now()
     messaging_profile.sent_count += 1
+
     if responding_to.profile_id != messaging_profile.id:
         responding_to.profile.reputation += 1
         responding_to.profile.received_count += 1
@@ -130,7 +159,14 @@ def respond_to_message(
     return response
 
 
-@router.post("/report/{message_id}", response_model=schemas.MessageReportResult)
+@router.post(
+    "/report/{message_id}",
+    response_model=schemas.MessageReportResult,
+    responses={
+        403: {"description": "You are not participating in this conversation."},
+        404: {"description": "Conversation does not exist."},
+    },
+)
 def report_message(
     message_id: int,
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
@@ -166,31 +202,26 @@ def read_my_messages(
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
     db: Session = Depends(core.get_db),
 ):
-    my_messages = (
+    messages = (
         db.query(models.Message)
-        .filter(models.Message.profile_id == messaging_profile.id)
-        .filter(models.Message.responding_to_id == None)
-        .filter(models.Message.reported.not_in([true()]))
+        .filter(
+            models.Message.reported.not_in([true()]),
+            models.Message.responding_to_id == None,
+        )
+        .filter(
+            or_(
+                models.Message.profile_id == messaging_profile.id,
+                models.Message.reader_id == messaging_profile.id,
+            ),
+        )
         .offset(skip)
         .limit(limit)
         .all()
     )
-
-    received_messages = (
-        db.query(models.Message)
-        .filter(models.Message.reader_id == messaging_profile.id)
-        .filter(models.Message.responding_to_id == None)
-        .filter(models.Message.reported.not_in([true()]))
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-
-    messages = my_messages + received_messages
     return messages
 
 
-@router.get("/profile")
+@router.get("/profile", response_model=schemas.MessagingProfile)
 def read_my_profile(
     messaging_profile: models.MessagingProfile = Depends(get_messaging_profile),
 ):

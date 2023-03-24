@@ -59,7 +59,20 @@ def generate_secret_code() -> str:
     return uuid.uuid4().hex
 
 
-@router.get("/activate/{activation_code}")
+@router.get(
+    "/activate/{activation_code}",
+    response_model=schemas.User,
+    responses={
+        200: {
+            "description": "Ideally should redirect to success page of frontend.",
+            "model": schemas.User,
+        },
+        404: {"description": "Activation code not found."},
+        400: {
+            "description": "Probably an internal error, maybe the username was already activated by someone else between the creation of this activation object and now."
+        },
+    },
+)
 def activate(activation_code: str, db: Session = Depends(core.get_db)):
     user_activation = (
         db.query(models.UserActivation)
@@ -88,7 +101,7 @@ def activate(activation_code: str, db: Session = Depends(core.get_db)):
             detail="Could not process your activation request. Please check if this user has already been activated.",
         )
 
-    return RedirectResponse(f'{settings.allowed_origin}/activate')
+    return user
 
 
 def send_email(receiver: str, subject: str, content: str):
@@ -132,7 +145,17 @@ def send_activation_code(receiver: str, secret_code: str, username: str):
     send_email(receiver, "Devizzle - Account Activation", content)
 
 
-@router.post("/register")
+@router.post(
+    "/register",
+    response_model=schemas.RegistrationRequestResult,
+    responses={
+        200: {
+            "description": "An activation code was sent to the email (assuming its valid).",
+            "model": schemas.RegistrationRequestResult,
+        },
+        400: {"description": "Most likely user provided wrong input."},
+    },
+)
 def register(
     form_data: schemas.RegistrationForm,
     background_tasks: BackgroundTasks,
@@ -198,7 +221,14 @@ def register(
     )
 
 
-@router.post("/login")
+@router.post(
+    "/login",
+    response_model=schemas.Token,
+    responses={
+        200: {"description": "Successful login.", "model": schemas.Token},
+        401: {"description": "Invalid credentials or disabled account."},
+    },
+)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(core.get_db),
@@ -208,6 +238,13 @@ def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if user.is_disabled:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Your account has been disabled.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -241,7 +278,7 @@ def send_password_change_code(receiver: str, secret_code: str):
     send_email(receiver, "Devizzle - Password Change", content)
 
 
-@router.post("/request-password-change")
+@router.post("/request-password-change", description="Not used at the moment.")
 def request_password_change(
     form_data: schemas.PasswordChangeRequest,
     background_tasks: BackgroundTasks,
@@ -289,7 +326,7 @@ def send_password_change_confirmation(receiver: str, username: str):
     send_email(receiver, "Devizzle - Password Change Confirmation", content)
 
 
-@router.post("/password-change")
+@router.post("/password-change", description="Not used at the moment.")
 def password_change(
     form_data: schemas.PasswordChangeForm,
     background_tasks: BackgroundTasks,
