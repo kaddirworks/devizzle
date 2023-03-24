@@ -43,6 +43,7 @@ class MessagingProfile(BaseModel):
     received_count: int
     reputation: int
     user_id: int
+    date_created: datetime
 
     class Config:
         orm_mode = True

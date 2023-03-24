@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Integer, Column, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import Integer, Column, String, DateTime, Boolean, ForeignKey, Text
 from sqlalchemy.orm import relationship
 
 from devizzle.apps.auth import models
@@ -26,10 +26,10 @@ class Message(Base):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, index=True)
-    text = Column(String, nullable=False)
+    text = Column(Text, nullable=False)
     send_date = Column(DateTime, default=datetime.now)
     read_date = Column(DateTime, default=None, nullable=True)
-    reported = Column(Boolean, nullable=False, default=False)
+    reported = Column(Boolean, default=True)
 
     profile_id = Column(ForeignKey("messaging_profiles.id"), nullable=False)
     profile = relationship("MessagingProfile", foreign_keys=[profile_id])
@@ -53,4 +53,4 @@ class Report(Base):
     last_update = Column(DateTime, default=datetime.now)
     message_id = Column(ForeignKey("messages.id"), nullable=False)
     justified = Column(Boolean, default=True)
-    notes = Column(String)
+    notes = Column(Text)
