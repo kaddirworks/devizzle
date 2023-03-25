@@ -101,7 +101,7 @@ def activate(activation_code: str, db: Session = Depends(core.get_db)):
             detail="Could not process your activation request. Please check if this user has already been activated.",
         )
 
-    return user
+    return RedirectResponse(f"{settings.allowed_origin}/activate")
 
 
 def send_email(receiver: str, subject: str, content: str):
