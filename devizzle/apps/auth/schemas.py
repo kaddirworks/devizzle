@@ -39,37 +39,37 @@ class RegistrationRequestResult(BaseModel):
     created_at: datetime
 
 
-class PasswordChangeRequest(BaseModel):
-    """
-    Sent from user to server. Server sends email to registered email address
-    with secret code.
-    """
+# class PasswordChangeRequest(BaseModel):
+#     """
+#     Sent from user to server. Server sends email to registered email address
+#     with secret code.
+#     """
 
-    email: str
-
-
-class PasswordChangeRequestResult(BaseModel):
-    """
-    Sent from server to user after user requests a password change.
-    """
-
-    email: str
-    created_at: datetime
+#     email: str
 
 
-class PasswordChangeForm(BaseModel):
-    """
-    Sent from user to server, after user has a secret code.
-    """
+# class PasswordChangeRequestResult(BaseModel):
+#     """
+#     Sent from server to user after user requests a password change.
+#     """
 
-    new_password: str
-    secret_code: str
+#     email: str
+#     created_at: datetime
 
 
-class PasswordChangeResult(BaseModel):
-    """
-    Sent from server to user after password is successfully changed.
-    """
+# class PasswordChangeForm(BaseModel):
+#     """
+#     Sent from user to server, after user has a secret code.
+#     """
 
-    email: str
-    changed_at: datetime
+#     new_password: str
+#     secret_code: str
+
+
+# class PasswordChangeResult(BaseModel):
+#     """
+#     Sent from server to user after password is successfully changed.
+#     """
+
+#     email: str
+#     changed_at: datetime

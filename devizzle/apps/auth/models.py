@@ -33,10 +33,10 @@ class UserActivation(Base):
     secret_code = Column(String(256), unique=True, nullable=False, index=True)
 
 
-class PasswordChangeRequest(Base):
-    __tablename__ = "password_change_requests"
+# class PasswordChangeRequest(Base):
+#     __tablename__ = "password_change_requests"
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(128), unique=True, nullable=True)
-    created_at = Column(DateTime, default=datetime.now)
-    secret_code = Column(String(256), unique=True, nullable=False, index=True)
+#     id = Column(Integer, primary_key=True, index=True)
+#     email = Column(String(128), unique=True, nullable=True)
+#     created_at = Column(DateTime, default=datetime.now)
+#     secret_code = Column(String(256), unique=True, nullable=False, index=True)
