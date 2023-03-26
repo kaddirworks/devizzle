@@ -42,7 +42,7 @@ RUNNING_FROM = "http://localhost:8000"
 
 Some of these options might not be obvious. `DATABASE_URL` is the url to your database server (can be on the same machine) for more information see the [database installation](#database) section.
 
-`SECRET_KEY` is the key used internally by passlib to hash user passwords as well as `ALGORITHM`, which determines the algorithm. For more information, see `passlib`'s relevant documentation.
+`SECRET_KEY` is the key used internally to generate JWT's along with `ALGORITHM`. For more information, see `python-jose`'s relevant documentation. You can use the command `openssl rand -hex 32` to generate a strong key.
 
 `ALLOWED_ORIGIN` is the address of the server where you will be hosting the front end and making HTTP queries to this api.
 
