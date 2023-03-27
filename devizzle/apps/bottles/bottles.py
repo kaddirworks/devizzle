@@ -96,11 +96,11 @@ def receive_message(
         detail="We could not find any messages.",
     )
 
-    today_date = date.today()
-    last_used_date = messaging_profile.last_used + timedelta(hours=1)
-    last_used_date = last_used_date.date()
-    if last_used_date == today_date:
-        raise no_new_message
+    # today_date = date.today()
+    # last_used_date = messaging_profile.last_used + timedelta(hours=1)
+    # last_used_date = last_used_date.date()
+    # if last_used_date == today_date:
+    #     raise no_new_message
 
     message = (
         db.query(models.Message)

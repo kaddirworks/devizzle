@@ -29,7 +29,7 @@ class Message(Base):
     text = Column(Text, nullable=False)
     send_date = Column(DateTime, default=datetime.now)
     read_date = Column(DateTime, default=None, nullable=True)
-    reported = Column(Boolean, default=True)
+    reported = Column(Boolean, default=False)
 
     profile_id = Column(ForeignKey("messaging_profiles.id"), nullable=False)
     profile = relationship("MessagingProfile", foreign_keys=[profile_id])
