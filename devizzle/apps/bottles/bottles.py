@@ -105,7 +105,7 @@ def receive_message(
     message = (
         db.query(models.Message)
         .filter(
-            models.Message.profile_id.is_not(messaging_profile.id),
+            models.Message.profile_id != messaging_profile.id,
             models.Message.reader_id == None,
             models.Message.responding_to_id == None,
         )
